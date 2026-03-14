@@ -24,7 +24,12 @@ class Warehouse extends Model
     public function materials()
     {
         return $this->belongsToMany(Material::class, 'material_warehouses')
-                    ->withPivot('stock')
+                    ->withPivot('stock', 'location', 'average_cost')
                     ->withTimestamps();
+    }
+
+    public function warehouseStocks()
+    {
+        return $this->hasMany(MaterialWarehouse::class);
     }
 }

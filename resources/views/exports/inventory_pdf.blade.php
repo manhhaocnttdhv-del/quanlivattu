@@ -44,20 +44,37 @@
                 <th>Tên Vật tư</th>
                 <th>ĐVT</th>
                 <th>Kho hàng</th>
+                <th>Vị trí</th>
                 <th class="text-right">Tồn hiện tại</th>
+                <th class="text-right">Giá vốn</th>
+                <th class="text-right">Thành tiền</th>
             </tr>
         </thead>
         <tbody>
+            @php $grandTotal = 0; @endphp
             @foreach($stockData as $stock)
+            @php 
+                $lineTotal = $stock->stock * $stock->average_cost;
+                $grandTotal += $lineTotal;
+            @endphp
             <tr>
                 <td class="text-center">{{ $stock->material->id }}</td>
                 <td>{{ $stock->material->name }}</td>
                 <td class="text-center">{{ $stock->material->unit->name }}</td>
                 <td>{{ $stock->warehouse->name }}</td>
-                <td class="text-right">{{ $stock->stock }}</td>
+                <td class="text-center">{{ $stock->location ?? '-' }}</td>
+                <td class="text-right">{{ number_format($stock->stock, 2) }}</td>
+                <td class="text-right">{{ number_format($stock->average_cost) }} ₫</td>
+                <td class="text-right">{{ number_format($lineTotal) }} ₫</td>
             </tr>
             @endforeach
         </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="7" style="text-align: right;">TỔNG CỘNG GIÁ TRỊ:</th>
+                <th class="text-right">{{ number_format($grandTotal) }} ₫</th>
+            </tr>
+        </tfoot>
     </table>
 </body>
 </html>

@@ -19,21 +19,21 @@ class InventoryReportExport implements FromCollection, WithHeadings, WithMapping
 
     public function collection()
     {
-        $query = DB::table('material_warehouse')
-            ->join('materials', 'material_warehouse.material_id', '=', 'materials.id')
-            ->join('warehouses', 'material_warehouse.warehouse_id', '=', 'warehouses.id')
+        $query = DB::table('material_warehouses')
+            ->join('materials', 'material_warehouses.material_id', '=', 'materials.id')
+            ->join('warehouses', 'material_warehouses.warehouse_id', '=', 'warehouses.id')
             ->join('units', 'materials.unit_id', '=', 'units.id')
             ->select(
                 'materials.id',
                 'materials.name as material_name',
                 'units.name as unit_name',
                 'warehouses.name as warehouse_name',
-                'material_warehouse.stock',
+                'material_warehouses.stock',
                 'materials.min_stock'
             );
 
         if ($this->warehouseId) {
-            $query->where('material_warehouse.warehouse_id', $this->warehouseId);
+            $query->where('material_warehouses.warehouse_id', $this->warehouseId);
         }
 
         return $query->get();

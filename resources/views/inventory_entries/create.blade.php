@@ -91,8 +91,9 @@
                                 <tr>
                                     <th>Tên Vật tư</th>
                                     <th style="width: 15%;">ĐVT</th>
-                                    <th style="width: 20%;">Số lượng nhập</th>
-                                    <th style="width: 20%;">Đơn giá (VNĐ)</th>
+                                    <th style="width: 15%;">Số lượng</th>
+                                    <th style="width: 15%;">Đơn giá</th>
+                                    <th style="width: 15%;">Vị trí kệ</th>
                                     <th style="width: 10%; text-align: center;">Xóa</th>
                                 </tr>
                             </thead>
@@ -131,6 +132,9 @@
         </td>
         <td>
             <input type="number" class="form-control text-end price-input" name="materials[__INDEX__][price]" min="0" value="0">
+        </td>
+        <td>
+            <input type="text" class="form-control" name="materials[__INDEX__][location]" placeholder="Vị trí (vd: Kệ A1)">
         </td>
         <td class="text-center align-middle">
             <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn"><i class="bi bi-trash"></i></button>

@@ -9,7 +9,7 @@ class InventoryTransferDetail extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['inventory_transfer_id', 'material_id', 'quantity'];
+    protected $fillable = ['inventory_transfer_id', 'material_id', 'quantity', 'location'];
 
     public function inventoryTransfer()
     {

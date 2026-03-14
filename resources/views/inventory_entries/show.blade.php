@@ -58,6 +58,7 @@
                                 <th>ĐVT</th>
                                 <th>Số lượng</th>
                                 <th class="text-end">Đơn giá</th>
+                                <th>Vị trí kệ</th>
                                 <th class="text-end">Thành tiền</th>
                             </tr>
                         </thead>
@@ -74,13 +75,14 @@
                                 <td>{{ $detail->material->unit->name ?? 'N/A' }}</td>
                                 <td>{{ number_format($detail->quantity, 2) }}</td>
                                 <td class="text-end">{{ number_format($detail->price) }} ₫</td>
+                                <td><span class="badge text-bg-secondary">{{ $detail->location ?? 'N/A' }}</span></td>
                                 <td class="text-end fw-bold">{{ number_format($subtotal) }} ₫</td>
                             </tr>
                             @endforeach
                         </tbody>
                         <tfoot>
                             <tr>
-                                <th colspan="5" class="text-end fs-5">TỔNG CỘNG:</th>
+                                <th colspan="6" class="text-end fs-5">TỔNG CỘNG:</th>
                                 <th class="text-end fs-5 text-danger fw-bolder">{{ number_format($total) }} ₫</th>
                             </tr>
                         </tfoot>

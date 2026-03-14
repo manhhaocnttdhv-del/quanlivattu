@@ -40,6 +40,7 @@
                 <th>Ngày Nhập</th>
                 <th>Kho Nhập</th>
                 <th>Nhà Cung Cấp</th>
+                <th>Ghi chú</th>
                 <th>Người Lập</th>
                 <th>Trạng Thái</th>
             </tr>
@@ -51,6 +52,7 @@
                 <td class="text-center">{{ \Carbon\Carbon::parse($entry->date)->format('d/m/Y') }}</td>
                 <td>{{ $entry->warehouse->name ?? '' }}</td>
                 <td>{{ $entry->supplier->name ?? '' }}</td>
+                <td>{{ $entry->note ?? '' }}</td>
                 <td>{{ $entry->user->name ?? '' }}</td>
                 <td class="text-center">
                     @if($entry->status == 'completed') Đã duyệt

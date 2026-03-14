@@ -91,7 +91,8 @@
                                 <tr>
                                     <th>Tên Vật tư</th>
                                     <th style="width: 15%;">ĐVT</th>
-                                    <th style="width: 20%;">Số lượng chuyển</th>
+                                    <th style="width: 15%;">Số lượng chuyển</th>
+                                    <th style="width: 20%;">Vị trí tại kho xuất</th>
                                     <th style="width: 10%; text-align: center;">Xóa</th>
                                 </tr>
                             </thead>
@@ -104,7 +105,7 @@
                 <!-- /.card-body -->
 
                 <div class="card-footer text-end">
-                    <a href="{{ route('inventory-transfers.index') }}" class="btn btn-default me-2">Hủy bỏ</a>
+                    <a href="{{ route('inventory-transfers.index') }}" class="btn btn-info me-2 text-white">Hủy bỏ</a>
                     <button type="submit" class="btn btn-info text-white" id="submitBtn">Hoàn tất Chuyển kho</button>
                 </div>
             </form>
@@ -120,13 +121,25 @@
             <select class="form-select material-select" name="materials[__INDEX__][id]" required>
                 <option value="">-- Chọn Vật tư --</option>
                 @foreach($materials as $material)
-                <option value="{{ $material->id }}" data-unit="{{ $material->unit->name ?? '' }}">{{ $material->name }}</option>
+                @php
+                    $stocks = $material->warehouseStocks->keyBy('warehouse_id')->map(function($s) {
+                        return ['stock' => $s->stock, 'location' => $s->location];
+                    });
+                @endphp
+                <option value="{{ $material->id }}" 
+                        data-unit="{{ $material->unit->name ?? '' }}"
+                        data-stocks="{{ json_encode($stocks) }}">
+                    {{ $material->name }}
+                </option>
                 @endforeach
             </select>
         </td>
         <td class="unit-cell text-center align-middle bg-light">-</td>
         <td>
             <input type="number" class="form-control text-end qty-input" name="materials[__INDEX__][quantity]" step="0.01" min="0.01" value="1" required>
+        </td>
+        <td>
+            <input type="text" class="form-control" name="materials[__INDEX__][location]" readonly placeholder="Vị trí lấy hàng">
         </td>
         <td class="text-center align-middle">
             <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn"><i class="bi bi-trash"></i></button>
@@ -164,11 +177,41 @@
 
         listBody.addEventListener('change', function(e) {
             if (e.target.classList.contains('material-select')) {
+                const row = e.target.closest('tr');
                 const selectedOption = e.target.options[e.target.selectedIndex];
-                const unitCell = e.target.closest('tr').querySelector('.unit-cell');
+                const unitCell = row.querySelector('.unit-cell');
+                const locationInput = row.querySelector('input[name*="[location]"]');
+                
                 const unitName = selectedOption.getAttribute('data-unit');
                 unitCell.textContent = unitName ? unitName : '-';
+
+                updateRowLocation(row);
             }
+        });
+
+        function updateRowLocation(row) {
+            const materialSelect = row.querySelector('.material-select');
+            const selectedOption = materialSelect.options[materialSelect.selectedIndex];
+            const locationInput = row.querySelector('input[name*="[location]"]');
+            const fromWhId = document.getElementById('from_warehouse_id').value;
+
+            if (selectedOption && selectedOption.value && fromWhId) {
+                const stocks = JSON.parse(selectedOption.getAttribute('data-stocks') || '{}');
+                if (stocks[fromWhId]) {
+                    locationInput.value = stocks[fromWhId].location || 'Không định vị';
+                } else {
+                    locationInput.value = 'Hết hàng/Không có';
+                }
+            }
+        }
+
+        const fromWhSelect = document.getElementById('from_warehouse_id');
+        const toWhSelect = document.getElementById('to_warehouse_id');
+        
+        fromWhSelect.addEventListener('change', function() {
+            listBody.querySelectorAll('tr').forEach(row => {
+                updateRowLocation(row);
+            });
         });
 
         form.addEventListener('submit', function(e) {
@@ -178,8 +221,8 @@
                 return;
             }
 
-            const fromWh = document.getElementById('from_warehouse_id').value;
-            const toWh = document.getElementById('to_warehouse_id').value;
+            const fromWh = fromWhSelect.value;
+            const toWh = toWhSelect.value;
             
             if(fromWh === toWh && fromWh !== '') {
                 e.preventDefault();

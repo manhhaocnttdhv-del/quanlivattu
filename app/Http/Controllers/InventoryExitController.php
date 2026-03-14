@@ -35,7 +35,13 @@ class InventoryExitController extends Controller
                 $q->where('warehouse_id', Auth::user()->warehouse_id)
                   ->orWhereNull('warehouse_id');
             })->get();
-        $materials = Material::with('unit')->get(); // Note: Ideally should check stock here, skipping for basic version
+        $warehouseId = Auth::user()->role === 'Admin tổng' ? null : Auth::user()->warehouse_id;
+        
+        $materials = Material::with(['unit', 'warehouseStocks' => function($q) use ($warehouseId) {
+            if ($warehouseId) {
+                $q->where('warehouse_id', $warehouseId);
+            }
+        }])->get();
 
         return view('inventory_exits.create', compact('warehouses', 'customers', 'materials'));
     }
@@ -50,6 +56,7 @@ class InventoryExitController extends Controller
             'materials' => 'required|array|min:1',
             'materials.*.id' => 'required|exists:materials,id',
             'materials.*.quantity' => 'required|numeric|min:0.01',
+            'materials.*.location' => 'nullable|string|max:100',
         ]);
 
         try {
@@ -74,6 +81,7 @@ class InventoryExitController extends Controller
                 $exit->details()->create([
                     'material_id' => $item['id'],
                     'quantity' => $item['quantity'],
+                    'location' => $item['location'] ?? null,
                 ]);
             }
 
@@ -106,7 +114,9 @@ class InventoryExitController extends Controller
                     $inventoryExit->warehouse_id,
                     $detail->material_id,
                     $detail->quantity,
-                    'subtract'
+                    'subtract',
+                    null,
+                    $detail->location
                 );
             }
 

@@ -15,15 +15,17 @@ class InventoryService
      * @param int $materialId
      * @param float $quantity
      * @param string $type 'add' or 'subtract'
+     * @param float|null $unitPrice Required for 'add' if tracking valuation
+     * @param string|null $location Shelf/Rack location
      * @return MaterialWarehouse
      * @throws Exception
      */
-    public function updateStock($warehouseId, $materialId, $quantity, $type = 'add')
+    public function updateStock($warehouseId, $materialId, $quantity, $type = 'add', $unitPrice = null, $location = null)
     {
-        return DB::transaction(function () use ($warehouseId, $materialId, $quantity, $type) {
+        return DB::transaction(function () use ($warehouseId, $materialId, $quantity, $type, $unitPrice, $location) {
             $record = MaterialWarehouse::firstOrCreate(
                 ['warehouse_id' => $warehouseId, 'material_id' => $materialId],
-                ['stock' => 0]
+                ['stock' => 0, 'average_cost' => 0]
             );
 
             if ($type === 'subtract') {
@@ -32,7 +34,18 @@ class InventoryService
                 }
                 $record->stock -= $quantity;
             } else {
+                // Weighted Average Cost Calculation: (Old Qty * Old Cost + New Qty * New Price) / Total Qty
+                if ($unitPrice !== null && $unitPrice > 0) {
+                    $totalQty = $record->stock + $quantity;
+                    if ($totalQty > 0) {
+                        $record->average_cost = (($record->stock * $record->average_cost) + ($quantity * $unitPrice)) / $totalQty;
+                    }
+                }
                 $record->stock += $quantity;
+            }
+
+            if ($location) {
+                $record->location = $location;
             }
 
             $record->save();

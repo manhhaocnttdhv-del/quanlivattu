@@ -92,6 +92,7 @@
                                     <th>Tên Vật tư</th>
                                     <th style="width: 15%;">ĐVT</th>
                                     <th style="width: 20%;">Số lượng xuất</th>
+                                    <th style="width: 20%;">Vị trí lấy hàng</th>
                                     <th style="width: 10%; text-align: center;">Xóa</th>
                                 </tr>
                             </thead>
@@ -120,13 +121,25 @@
             <select class="form-select material-select" name="materials[__INDEX__][id]" required>
                 <option value="">-- Chọn Vật tư --</option>
                 @foreach($materials as $material)
-                <option value="{{ $material->id }}" data-unit="{{ $material->unit->name ?? '' }}">{{ $material->name }}</option>
+                @php
+                    $stocks = $material->warehouseStocks->keyBy('warehouse_id')->map(function($s) {
+                        return ['stock' => $s->stock, 'location' => $s->location];
+                    });
+                @endphp
+                <option value="{{ $material->id }}" 
+                        data-unit="{{ $material->unit->name ?? '' }}"
+                        data-stocks="{{ json_encode($stocks) }}">
+                    {{ $material->name }}
+                </option>
                 @endforeach
             </select>
         </td>
         <td class="unit-cell text-center align-middle bg-light">-</td>
         <td>
             <input type="number" class="form-control text-end qty-input" name="materials[__INDEX__][quantity]" step="0.01" min="0.01" value="1" required>
+        </td>
+        <td>
+            <input type="text" class="form-control" name="materials[__INDEX__][location]" placeholder="Vị trí lấy hàng">
         </td>
         <td class="text-center align-middle">
             <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn"><i class="bi bi-trash"></i></button>
@@ -164,12 +177,36 @@
 
         listBody.addEventListener('change', function(e) {
             if (e.target.classList.contains('material-select')) {
+                const row = e.target.closest('tr');
                 const selectedOption = e.target.options[e.target.selectedIndex];
-                const unitCell = e.target.closest('tr').querySelector('.unit-cell');
+                const unitCell = row.querySelector('.unit-cell');
+                const locationInput = row.querySelector('input[name*="[location]"]');
+                
                 const unitName = selectedOption.getAttribute('data-unit');
                 unitCell.textContent = unitName ? unitName : '-';
+
+                updateRowLocation(row);
             }
         });
+
+        function updateRowLocation(row) {
+            const materialSelect = row.querySelector('.material-select');
+            const selectedOption = materialSelect.options[materialSelect.selectedIndex];
+            const locationInput = row.querySelector('input[name*="[location]"]');
+            const warehouseId = document.getElementById('warehouse_id').value;
+
+            if (selectedOption && selectedOption.value && warehouseId) {
+                const stocks = JSON.parse(selectedOption.getAttribute('data-stocks') || '{}');
+                if (stocks[warehouseId]) {
+                    locationInput.value = stocks[warehouseId].location || '';
+                } else {
+                    locationInput.value = '';
+                }
+            }
+        }
+
+        const warehouseSelect = document.getElementById('warehouse_id');
+        const customerSelect = document.getElementById('customer_id');
 
         form.addEventListener('submit', function(e) {
             if (listBody.querySelectorAll('tr').length === 0) {
@@ -184,22 +221,14 @@
             materialIndex++;
         }
 
-        // Customer filtering based on warehouse
-        const warehouseSelect = document.getElementById('warehouse_id');
-        const customerSelect = document.getElementById('customer_id');
-
         function filterCustomers() {
             const selectedWarehouse = warehouseSelect.value;
-            let currentCustomerValid = false;
-
             Array.from(customerSelect.options).forEach(option => {
-                if (!option.value) return; // Skip dummy option
+                if (!option.value) return; 
                 
                 const customerWarehouseId = option.getAttribute('data-warehouse-id');
-                // Show if customer is global (no warehouse) or matches selected warehouse
                 if (!customerWarehouseId || customerWarehouseId === selectedWarehouse) {
                     option.style.display = '';
-                    if (option.selected) currentCustomerValid = true;
                 } else {
                     option.style.display = 'none';
                     if (option.selected) {
@@ -210,8 +239,13 @@
             });
         }
 
-        warehouseSelect.addEventListener('change', filterCustomers);
-        // Run once on load
+        warehouseSelect.addEventListener('change', function() {
+            filterCustomers();
+            listBody.querySelectorAll('tr').forEach(row => {
+                updateRowLocation(row);
+            });
+        });
+
         if (warehouseSelect.value) {
             filterCustomers();
         }

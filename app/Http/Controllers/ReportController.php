@@ -64,6 +64,7 @@ class ReportController extends Controller
         }
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.inventory_pdf', compact('stockData', 'warehouseName'));
+        $pdf->setPaper('a4', 'landscape'); // Landscape for more columns
         
         return $pdf->download('bao-cao-ton-kho-' . date('Ymd-Hi') . '.pdf');
     }

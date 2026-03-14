@@ -67,6 +67,7 @@ Route::middleware(['auth'])->group(function () {
         
         Route::resource('warehouses', WarehouseController::class);
         Route::resource('users', UserController::class);
+        Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'index'])->name('audit-logs.index');
     });
 });
 

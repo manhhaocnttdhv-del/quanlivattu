@@ -37,7 +37,12 @@ class InventoryTransferController extends Controller
         // Receiver warehouse (To) could be any other active warehouse
         $toWarehouses = $allWarehouses;
 
-        $materials = Material::with('unit')->get();
+        $fromWarehouseId = Auth::user()->role === 'Admin tổng' ? null : Auth::user()->warehouse_id;
+        $materials = Material::with(['unit', 'warehouseStocks' => function($q) use ($fromWarehouseId) {
+            if ($fromWarehouseId) {
+                $q->where('warehouse_id', $fromWarehouseId);
+            }
+        }])->get();
 
         return view('inventory_transfers.create', compact('fromWarehouses', 'toWarehouses', 'materials'));
     }
@@ -52,6 +57,7 @@ class InventoryTransferController extends Controller
             'materials' => 'required|array|min:1',
             'materials.*.id' => 'required|exists:materials,id',
             'materials.*.quantity' => 'required|numeric|min:0.01',
+            'materials.*.location' => 'nullable|string|max:100',
         ]);
 
         try {
@@ -76,6 +82,7 @@ class InventoryTransferController extends Controller
                 $transfer->details()->create([
                     'material_id' => $item['id'],
                     'quantity' => $item['quantity'],
+                    'location' => $item['location'] ?? null,
                 ]);
             }
 
@@ -116,7 +123,9 @@ class InventoryTransferController extends Controller
                     $inventoryTransfer->to_warehouse_id,
                     $detail->material_id,
                     $detail->quantity,
-                    'add'
+                    'add',
+                    null,
+                    $detail->location
                 );
             }
 

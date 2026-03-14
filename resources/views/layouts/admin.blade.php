@@ -40,6 +40,7 @@
     <!--end::Required Plugin(AdminLTE)-->
 
     @yield('styles')
+    @stack('styles')
   </head>
   <!--end::Head-->
   <!--begin::Body-->
@@ -206,6 +207,12 @@
                   <p>Người dùng</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="{{ route('audit-logs.index') }}" class="nav-link {{ request()->routeIs('audit-logs.index') ? 'active' : '' }}">
+                  <i class="nav-icon bi bi-clock-history"></i>
+                  <p>Nhật ký hoạt động</p>
+                </a>
+              </li>
               @endif
 
               <li class="nav-header">NGHIỆP VỤ</li>
@@ -360,6 +367,7 @@
     </script>
     <!--end::OverlayScrollbars Configure-->
     @yield('scripts')
+    @stack('scripts')
     <!--end::Script-->
   </body>
   <!--end::Body-->

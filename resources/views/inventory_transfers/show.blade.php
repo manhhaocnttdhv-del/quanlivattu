@@ -56,6 +56,7 @@
                                 <th class="text-start">Tên vật tư</th>
                                 <th>ĐVT</th>
                                 <th>Số lượng chuyển</th>
+                                <th>Vị trí tại kho nguồn</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -65,6 +66,7 @@
                                 <td class="text-start">{{ $detail->material->name ?? 'N/A' }}</td>
                                 <td>{{ $detail->material->unit->name ?? 'N/A' }}</td>
                                 <td class="fw-bold">{{ number_format($detail->quantity, 2) }}</td>
+                                <td><span class="badge text-bg-info text-white">{{ $detail->location ?? 'N/A' }}</span></td>
                             </tr>
                             @endforeach
                         </tbody>

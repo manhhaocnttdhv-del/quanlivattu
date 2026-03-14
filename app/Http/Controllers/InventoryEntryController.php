@@ -53,6 +53,7 @@ class InventoryEntryController extends Controller
             'materials.*.id' => 'required|exists:materials,id',
             'materials.*.quantity' => 'required|numeric|min:0.01',
             'materials.*.price' => 'nullable|numeric|min:0',
+            'materials.*.location' => 'nullable|string|max:100',
         ]);
 
         try {
@@ -72,6 +73,7 @@ class InventoryEntryController extends Controller
                     'material_id' => $item['id'],
                     'quantity' => $item['quantity'],
                     'price' => $item['price'] ?? 0,
+                    'location' => $item['location'] ?? null,
                 ]);
             }
 
@@ -103,7 +105,9 @@ class InventoryEntryController extends Controller
                     $inventoryEntry->warehouse_id,
                     $detail->material_id,
                     $detail->quantity,
-                    'add'
+                    'add',
+                    $detail->price,
+                    $detail->location
                 );
             }
 

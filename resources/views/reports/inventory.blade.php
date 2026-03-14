@@ -42,24 +42,41 @@
                             <th>Kho hàng</th>
                             <th class="text-start">Tên Vật tư</th>
                             <th>ĐVT</th>
+                            <th>Vị trí</th>
                             <th class="text-success fs-5">Tồn Hiện Tại</th>
+                            <th class="text-end">Giá vốn</th>
+                            <th class="text-end">Giá trị tồn</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @php $totalReportValue = 0; @endphp
                         @forelse($stockData as $item)
+                        @php 
+                            $itemTotalValue = $item->stock * $item->average_cost;
+                            $totalReportValue += $itemTotalValue;
+                        @endphp
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $item->warehouse->name ?? '' }}</td>
                             <td class="text-start fw-bold">{{ $item->material->name ?? '' }}</td>
                             <td>{{ $item->material->unit->name ?? 'N/A' }}</td>
+                            <td><span class="badge text-bg-secondary">{{ $item->location ?? 'N/A' }}</span></td>
                             <td class="text-success fs-5 fw-bolder">{{ number_format($item->stock, 2) }}</td>
+                            <td class="text-end">{{ number_format($item->average_cost) }} ₫</td>
+                            <td class="text-end fw-bold">{{ number_format($itemTotalValue) }} ₫</td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="text-center">Hệ thống chưa có dữ liệu tồn kho</td>
+                            <td colspan="8" class="text-center">Hệ thống chưa có dữ liệu tồn kho</td>
                         </tr>
                         @endforelse
                     </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="7" class="text-end fs-5">TỔNG GIÁ TRỊ TÀI SẢN KHO:</th>
+                            <th class="text-end fs-5 text-danger fw-bolder">{{ number_format($totalReportValue) }} ₫</th>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
             <!-- /.card-body -->
