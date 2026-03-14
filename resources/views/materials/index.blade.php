@@ -10,7 +10,7 @@
             <div class="card-header">
                 <h3 class="card-title">Danh sách</h3>
                 <div class="card-tools">
-                    @if(auth()->check() && auth()->user()->role === 'Admin tổng')
+                    @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
                     <a href="{{ route('materials.create') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-lg"></i> Thêm mới
                     </a>
@@ -28,7 +28,7 @@
                             <th>Mô tả</th>
                             <th>Tồn kho tối thiểu</th>
                             <th>Tồn kho tối đa</th>
-                            @if(auth()->check() && auth()->user()->role === 'Admin tổng')
+                            @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
                             <th style="width: 150px">Thao tác</th>
                             @endif
                         </tr>
@@ -42,7 +42,7 @@
                             <td>{{ $material->description }}</td>
                             <td>{{ $material->min_stock }}</td>
                             <td>{{ $material->max_stock }}</td>
-                            @if(auth()->check() && auth()->user()->role === 'Admin tổng')
+                            @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
                             <td>
                                 <a href="{{ route('materials.edit', $material) }}" class="btn btn-sm btn-warning">Sửa</a>
                                 <form action="{{ route('materials.destroy', $material) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">

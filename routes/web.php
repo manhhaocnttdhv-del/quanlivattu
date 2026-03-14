@@ -26,6 +26,16 @@ use App\Http\Controllers\InventoryTransferController;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    // Management routes restricted to Admins (Create, Store, Edit, Update, Destroy)
+    // Defined BEFORE base routes to ensure 'create' is not shadowed by '{material}'
+    Route::middleware(['role:Admin tổng,Admin kho'])->group(function () {
+        Route::resource('materials', MaterialController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+        Route::resource('units', UnitController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+        Route::resource('suppliers', SupplierController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+        Route::resource('customers', CustomerController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+    });
+
+    // Base routes accessible to all authenticated users (Read)
     Route::resource('materials', MaterialController::class)->only(['index', 'show']);
     Route::resource('units', UnitController::class)->only(['index', 'show']);
     Route::resource('suppliers', SupplierController::class)->only(['index', 'show']);
@@ -59,12 +69,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/inventory-entries-export/pdf', [InventoryEntryController::class, 'exportPdf'])->name('inventory-entries.export-pdf');
     Route::get('/inventory-exits-export/excel', [InventoryExitController::class, 'exportExcel'])->name('inventory-exits.export-excel');
     Route::get('/inventory-exits-export/pdf', [InventoryExitController::class, 'exportPdf'])->name('inventory-exits.export-pdf');
+
     Route::middleware(['role:Admin tổng'])->group(function () {
-        Route::resource('materials', MaterialController::class)->except(['index', 'show']);
-        Route::resource('units', UnitController::class)->except(['index', 'show']);
-        Route::resource('suppliers', SupplierController::class)->except(['index', 'show']);
-        Route::resource('customers', CustomerController::class)->except(['index', 'show']);
-        
         Route::resource('warehouses', WarehouseController::class);
         Route::resource('users', UserController::class);
         Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'index'])->name('audit-logs.index');

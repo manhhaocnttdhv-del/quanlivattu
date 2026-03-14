@@ -19,7 +19,10 @@ class CheckRole
             return redirect('login');
         }
 
-        if (in_array($request->user()->role, $roles)) {
+        $userRole = trim($request->user()->role);
+        $allowedRoles = array_map('trim', $roles);
+
+        if (in_array($userRole, $allowedRoles)) {
             return $next($request);
         }
 

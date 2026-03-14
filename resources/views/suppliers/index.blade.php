@@ -24,7 +24,7 @@
             <div class="card-header">
                 <h3 class="card-title">Danh sách</h3>
                 <div class="card-tools">
-                    @if(auth()->check() && auth()->user()->role === 'Admin tổng')
+                    @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
                     <a href="{{ route('suppliers.create') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-lg"></i> Thêm mới
                     </a>
@@ -40,7 +40,7 @@
                             <th>Tên nhà cung cấp</th>
                             <th>Số điện thoại</th>
                             <th>Địa chỉ</th>
-                            @if(auth()->check() && auth()->user()->role === 'Admin tổng')
+                            @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
                             <th style="width: 150px">Thao tác</th>
                             @endif
                         </tr>
@@ -52,7 +52,7 @@
                             <td>{{ $supplier->name }}</td>
                             <td>{{ $supplier->phone ?? 'N/A' }}</td>
                             <td>{{ $supplier->address ?? 'N/A' }}</td>
-                            @if(auth()->check() && auth()->user()->role === 'Admin tổng')
+                            @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
                             <td>
                                 <a href="{{ route('suppliers.edit', $supplier) }}" class="btn btn-sm btn-warning">Sửa</a>
                                 <form action="{{ route('suppliers.destroy', $supplier) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">

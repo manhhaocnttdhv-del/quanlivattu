@@ -235,6 +235,7 @@
                 </a>
               </li>
 
+              @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
               <li class="nav-header">KIỂM KÊ</li>
               <li class="nav-item">
                 <a href="{{ route('inventory-checks.index') }}" class="nav-link {{ request()->routeIs('inventory-checks.*') ? 'active' : '' }}">
@@ -242,6 +243,7 @@
                   <p>Kiểm kê kho</p>
                 </a>
               </li>
+              @endif
 
               <li class="nav-header">BÁO CÁO</li>
               <li class="nav-item">
