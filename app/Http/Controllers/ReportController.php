@@ -8,29 +8,63 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    public function inventory()
+    public function inventory(Request $request)
     {
-        // Simple stock calculation for basic reporting
-        $materials = Material::with('unit')->get()->map(function ($material) {
-            $totalIn = DB::table('inventory_entry_details')
-                ->join('inventory_entries', 'inventory_entries.id', '=', 'inventory_entry_details.inventory_entry_id')
-                ->where('inventory_entries.status', 'completed')
-                ->where('material_id', $material->id)
-                ->sum('quantity');
+        $user = auth()->user();
+        
+        $query = \App\Models\MaterialWarehouse::with(['material.unit', 'warehouse']);
 
-            $totalOut = DB::table('inventory_exit_details')
-                ->join('inventory_exits', 'inventory_exits.id', '=', 'inventory_exit_details.inventory_exit_id')
-                ->where('inventory_exits.status', 'completed')
-                ->where('material_id', $material->id)
-                ->sum('quantity');
+        if ($user && $user->role !== 'Admin tổng') {
+            $query->where('warehouse_id', $user->warehouse_id);
+        } else {
+            // Admin tổng có thể lọc theo kho (tùy chọn)
+            if ($request->filled('warehouse_id')) {
+                $query->where('warehouse_id', $request->warehouse_id);
+            }
+        }
 
-            $material->stock = $totalIn - $totalOut;
-            $material->total_in = $totalIn;
-            $material->total_out = $totalOut;
+        $stockData = $query->get();
 
-            return $material;
-        });
+        $warehouses = [];
+        if ($user && $user->role === 'Admin tổng') {
+            $warehouses = \App\Models\Warehouse::all();
+        }
 
-        return view('reports.inventory', compact('materials'));
+        return view('reports.inventory', compact('stockData', 'warehouses'));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\InventoryReportExport($request->warehouse_id), 
+            'bao-cao-ton-kho-' . date('Ymd-Hi') . '.xlsx'
+        );
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $user = auth()->user();
+        $query = \App\Models\MaterialWarehouse::with(['material.unit', 'warehouse']);
+
+        if ($user && $user->role !== 'Admin tổng') {
+            $query->where('warehouse_id', $user->warehouse_id);
+        } else {
+            if ($request->filled('warehouse_id')) {
+                $query->where('warehouse_id', $request->warehouse_id);
+            }
+        }
+
+        $stockData = $query->get();
+        $warehouseName = 'Tất cả các kho';
+        if ($request->filled('warehouse_id')) {
+            $wh = \App\Models\Warehouse::find($request->warehouse_id);
+            if ($wh) $warehouseName = $wh->name;
+        } elseif ($user && $user->role !== 'Admin tổng') {
+            $warehouseName = $user->warehouse->name ?? 'Kho cá nhân';
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.inventory_pdf', compact('stockData', 'warehouseName'));
+        
+        return $pdf->download('bao-cao-ton-kho-' . date('Ymd-Hi') . '.pdf');
     }
 }

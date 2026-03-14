@@ -23,7 +23,13 @@
         <div class="card mb-4">
             <div class="card-header">
                 <h3 class="card-title">Danh sách Phiếu xuất</h3>
-                <div class="card-tools">
+                <div class="card-tools d-flex gap-2">
+                    <a href="{{ route('inventory-exits.export-excel') }}" class="btn btn-sm btn-success">
+                        <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+                    </a>
+                    <a href="{{ route('inventory-exits.export-pdf') }}" class="btn btn-sm btn-danger">
+                        <i class="bi bi-file-earmark-pdf"></i> Xuất PDF
+                    </a>
                     <a href="{{ route('inventory-exits.create') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-lg"></i> Lập phiếu xuất
                     </a>
@@ -60,8 +66,23 @@
                                     <span class="badge text-bg-secondary">{{ $exit->status }}</span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="d-flex gap-1">
                                 <a href="{{ route('inventory-exits.show', $exit) }}" class="btn btn-sm btn-info text-white">Xem</a>
+                                @if($exit->status === 'pending')
+                                    <form action="{{ route('inventory-exits.approve', $exit) }}" method="POST" class="d-inline" onsubmit="return confirm('Duyệt phiếu này và trừ số lượng khỏi tồn kho?');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
+                                    </form>
+                                    <form action="{{ route('inventory-exits.cancel', $exit) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu này?');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                                    </form>
+                                @elseif($exit->status === 'completed')
+                                    <form action="{{ route('inventory-exits.cancel', $exit) }}" method="POST" class="d-inline" onsubmit="return confirm('CẢNH BÁO: Hủy phiếu đã duyệt sẽ TRẢ LẠI số lượng tồn kho đã xuất vào hệ thống. Chắc chắn?');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                         @empty

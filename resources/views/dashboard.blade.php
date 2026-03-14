@@ -139,5 +139,47 @@
         </div>
     </div>
 </div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card card-danger card-outline mb-4">
+            <div class="card-header">
+                <h3 class="card-title text-danger fw-bold"><i class="bi bi-exclamation-triangle"></i> Cảnh báo Hết vật tư (Dưới mức tối thiểu)</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>Kho hàng</th>
+                            <th>Tên vật tư</th>
+                            <th class="text-end">Tồn kho hiện tại</th>
+                            <th class="text-end">Mức tối thiểu (Min Stock)</th>
+                            <th class="text-center">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($lowStockItems as $item)
+                        <tr>
+                            <td>{{ $item->warehouse_name }}</td>
+                            <td>{{ $item->material_name }}</td>
+                            <td class="text-end text-danger fw-bold">{{ number_format($item->stock, 2) }}</td>
+                            <td class="text-end fw-semibold">{{ number_format($item->min_stock, 2) }}</td>
+                            <td class="text-center">
+                                @if($item->stock <= 0)
+                                    <span class="badge text-bg-danger">Hết hàng</span>
+                                @else
+                                    <span class="badge text-bg-warning">Sắp hết</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="5" class="text-center text-success py-3"><i class="bi bi-check-circle"></i> Không có vật tư nào dưới mức tối thiểu.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 <!--end::Row-->
 @endsection

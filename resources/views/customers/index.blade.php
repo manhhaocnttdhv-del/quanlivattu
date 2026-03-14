@@ -24,9 +24,11 @@
             <div class="card-header">
                 <h3 class="card-title">Danh sách</h3>
                 <div class="card-tools">
+                    @if(auth()->check() && auth()->user()->role === 'Admin tổng')
                     <a href="{{ route('customers.create') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-lg"></i> Thêm mới
                     </a>
+                    @endif
                 </div>
             </div>
             <!-- /.card-header -->
@@ -38,7 +40,9 @@
                             <th>Tên khách hàng</th>
                             <th>Số điện thoại</th>
                             <th>Địa chỉ</th>
+                            @if(auth()->check() && auth()->user()->role === 'Admin tổng')
                             <th style="width: 150px">Thao tác</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -48,6 +52,7 @@
                             <td>{{ $customer->name }}</td>
                             <td>{{ $customer->phone ?? 'N/A' }}</td>
                             <td>{{ $customer->address ?? 'N/A' }}</td>
+                            @if(auth()->check() && auth()->user()->role === 'Admin tổng')
                             <td>
                                 <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-warning">Sửa</a>
                                 <form action="{{ route('customers.destroy', $customer) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
@@ -56,6 +61,7 @@
                                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                                 </form>
                             </td>
+                            @endif
                         </tr>
                         @empty
                         <tr>

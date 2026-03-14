@@ -24,9 +24,11 @@
             <div class="card-header">
                 <h3 class="card-title">Danh sách</h3>
                 <div class="card-tools">
+                    @if(auth()->check() && auth()->user()->role === 'Admin tổng')
                     <a href="{{ route('units.create') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-lg"></i> Thêm mới
                     </a>
+                    @endif
                 </div>
             </div>
             <!-- /.card-header -->
@@ -36,7 +38,9 @@
                         <tr>
                             <th style="width: 10px">#</th>
                             <th>Tên đơn vị tính</th>
+                            @if(auth()->check() && auth()->user()->role === 'Admin tổng')
                             <th style="width: 150px">Thao tác</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -44,6 +48,7 @@
                         <tr class="align-middle">
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $unit->name }}</td>
+                            @if(auth()->check() && auth()->user()->role === 'Admin tổng')
                             <td>
                                 <a href="{{ route('units.edit', $unit) }}" class="btn btn-sm btn-warning">Sửa</a>
                                 <form action="{{ route('units.destroy', $unit) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
@@ -52,6 +57,7 @@
                                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                                 </form>
                             </td>
+                            @endif
                         </tr>
                         @empty
                         <tr>

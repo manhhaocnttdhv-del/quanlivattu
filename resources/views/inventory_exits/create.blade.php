@@ -6,6 +6,20 @@
 @section('content')
 <div class="row">
     <div class="col-md-10 mx-auto">
+        <!-- Messages -->
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div class="card card-warning card-outline mb-4">
             <div class="card-header">
                 <div class="card-title">Thông tin phiếu xuất</div>
@@ -42,7 +56,7 @@
                             <select class="form-select @error('customer_id') is-invalid @enderror" id="customer_id" name="customer_id" required>
                                 <option value="">-- Chọn Khách hàng --</option>
                                 @foreach($customers as $customer)
-                                <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>{{ $customer->name }}</option>
+                                <option value="{{ $customer->id }}" data-warehouse-id="{{ $customer->warehouse_id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>{{ $customer->name }}</option>
                                 @endforeach
                             </select>
                             @error('customer_id')
@@ -168,6 +182,38 @@
             let newRowHtml = template.replace(/__INDEX__/g, materialIndex);
             listBody.insertAdjacentHTML('beforeend', newRowHtml);
             materialIndex++;
+        }
+
+        // Customer filtering based on warehouse
+        const warehouseSelect = document.getElementById('warehouse_id');
+        const customerSelect = document.getElementById('customer_id');
+
+        function filterCustomers() {
+            const selectedWarehouse = warehouseSelect.value;
+            let currentCustomerValid = false;
+
+            Array.from(customerSelect.options).forEach(option => {
+                if (!option.value) return; // Skip dummy option
+                
+                const customerWarehouseId = option.getAttribute('data-warehouse-id');
+                // Show if customer is global (no warehouse) or matches selected warehouse
+                if (!customerWarehouseId || customerWarehouseId === selectedWarehouse) {
+                    option.style.display = '';
+                    if (option.selected) currentCustomerValid = true;
+                } else {
+                    option.style.display = 'none';
+                    if (option.selected) {
+                        option.selected = false;
+                        customerSelect.value = '';
+                    }
+                }
+            });
+        }
+
+        warehouseSelect.addEventListener('change', filterCustomers);
+        // Run once on load
+        if (warehouseSelect.value) {
+            filterCustomers();
         }
     });
 </script>

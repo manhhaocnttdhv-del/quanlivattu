@@ -14,7 +14,11 @@ class InventoryExitController extends Controller
 {
     public function index()
     {
-        $exits = InventoryExit::with(['warehouse', 'customer', 'user'])->latest()->paginate(10);
+        $query = InventoryExit::with(['warehouse', 'customer', 'user'])->latest();
+        if (Auth::user()->role !== 'Admin tổng') {
+            $query->where('warehouse_id', Auth::user()->warehouse_id);
+        }
+        $exits = $query->paginate(10);
         return view('inventory_exits.index', compact('exits'));
     }
 
@@ -25,13 +29,18 @@ class InventoryExitController extends Controller
             $warehouses = $warehouses->where('id', Auth::user()->warehouse_id);
         }
 
-        $customers = Customer::all();
+        $customers = Auth::user()->role === 'Admin tổng'
+            ? Customer::all()
+            : Customer::where(function($q) {
+                $q->where('warehouse_id', Auth::user()->warehouse_id)
+                  ->orWhereNull('warehouse_id');
+            })->get();
         $materials = Material::with('unit')->get(); // Note: Ideally should check stock here, skipping for basic version
 
         return view('inventory_exits.create', compact('warehouses', 'customers', 'materials'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, \App\Services\InventoryService $inventoryService)
     {
         $validated = $request->validate([
             'date' => 'required|date',
@@ -51,13 +60,17 @@ class InventoryExitController extends Controller
                 'warehouse_id' => $validated['warehouse_id'],
                 'customer_id' => $validated['customer_id'],
                 'user_id' => Auth::id(),
-                'status' => 'completed',
+                'status' => 'pending',
                 'note' => $validated['note'],
             ]);
 
             foreach ($validated['materials'] as $item) {
-                // To keep it simple, we just create the detail without checking stock limits 
-                // A real system MUST check if warehouse_id has enough stock of material_id
+                // Validate stock locally before allowing creation, even as pending
+                $currentStock = $inventoryService->getStock($validated['warehouse_id'], $item['id']);
+                if ($currentStock < $item['quantity']) {
+                    throw new \Exception("Vật tư ID {$item['id']} không đủ tồn kho (hiện có: {$currentStock}, yêu cầu: {$item['quantity']}) tại kho này.");
+                }
+
                 $exit->details()->create([
                     'material_id' => $item['id'],
                     'quantity' => $item['quantity'],
@@ -65,7 +78,7 @@ class InventoryExitController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('inventory-exits.index')->with('success', 'Tạo phiếu xuất thành công!');
+            return redirect()->route('inventory-exits.index')->with('success', 'Tạo phiếu xuất thành công! Phiếu đang chờ duyệt.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())->withInput();
@@ -76,6 +89,66 @@ class InventoryExitController extends Controller
     {
         $inventoryExit->load(['warehouse', 'customer', 'user', 'details.material.unit']);
         return view('inventory_exits.show', compact('inventoryExit'));
+    }
+
+    public function approve(InventoryExit $inventoryExit, \App\Services\InventoryService $inventoryService)
+    {
+        if ($inventoryExit->status !== 'pending') {
+            return back()->with('error', 'Chỉ có thể duyệt phiếu đang chờ.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($inventoryExit->details as $detail) {
+                // Will throw exception if insufficient stock during transaction
+                $inventoryService->updateStock(
+                    $inventoryExit->warehouse_id,
+                    $detail->material_id,
+                    $detail->quantity,
+                    'subtract'
+                );
+            }
+
+            $inventoryExit->update(['status' => 'completed']);
+
+            DB::commit();
+            return back()->with('success', 'Đã duyệt phiếu xuất và trừ tồn kho!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Lỗi khi duyệt: ' . $e->getMessage());
+        }
+    }
+
+    public function cancel(InventoryExit $inventoryExit, \App\Services\InventoryService $inventoryService)
+    {
+        if ($inventoryExit->status === 'cancelled') {
+            return back()->with('error', 'Phiếu đã bị hủy.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // If it was completed, we need to reverse the stock subtraction by adding it back
+            if ($inventoryExit->status === 'completed') {
+                foreach ($inventoryExit->details as $detail) {
+                    $inventoryService->updateStock(
+                        $inventoryExit->warehouse_id,
+                        $detail->material_id,
+                        $detail->quantity,
+                        'add'
+                    );
+                }
+            }
+
+            $inventoryExit->update(['status' => 'cancelled']);
+
+            DB::commit();
+            return back()->with('success', 'Đã hủy phiếu xuất thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Lỗi khi hủy: ' . $e->getMessage());
+        }
     }
 
     public function edit(string $id)
@@ -90,6 +163,27 @@ class InventoryExitController extends Controller
 
     public function destroy(string $id)
     {
-        return redirect()->route('inventory-exits.index')->with('error', 'Chức năng xóa phiếu xuất đang được xây dựng.');
+        return redirect()->route('inventory-exits.index')->with('error', 'Vui lòng sử dụng tính năng Hủy Phiếu thay vì xóa vĩnh viễn.');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\InventoryExitsExport(), 
+            'danh-sach-phieu-xuat-' . date('Ymd-Hi') . '.xlsx'
+        );
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $query = InventoryExit::with(['warehouse', 'customer', 'user'])->latest();
+        if (Auth::user()->role !== 'Admin tổng') {
+            $query->where('warehouse_id', Auth::user()->warehouse_id);
+        }
+        $exits = $query->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.inventory_exits_pdf', compact('exits'));
+        
+        return $pdf->download('danh-sach-phieu-xuat-' . date('Ymd-Hi') . '.pdf');
     }
 }

@@ -145,12 +145,14 @@
               </li>
               
               <li class="nav-header">QUẢN LÝ</li>
+              @if(auth()->check() && auth()->user()->role === 'Admin tổng')
               <li class="nav-item">
                 <a href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-house-door"></i>
                   <p>Kho hàng</p>
                 </a>
               </li>
+              @endif
               <li class="nav-item {{ request()->routeIs('materials.*') || request()->routeIs('units.*') ? 'menu-open' : '' }}">
                 <a href="#" class="nav-link {{ request()->routeIs('materials.*') || request()->routeIs('units.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-box-seam"></i>
@@ -223,6 +225,14 @@
                 <a href="{{ route('inventory-transfers.index') }}" class="nav-link {{ request()->routeIs('inventory-transfers.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-arrow-left-right"></i>
                   <p>Chuyển kho</p>
+                </a>
+              </li>
+
+              <li class="nav-header">KIỂM KÊ</li>
+              <li class="nav-item">
+                <a href="{{ route('inventory-checks.index') }}" class="nav-link {{ request()->routeIs('inventory-checks.*') ? 'active' : '' }}">
+                  <i class="nav-icon bi bi-list-check"></i>
+                  <p>Kiểm kê kho</p>
                 </a>
               </li>
 

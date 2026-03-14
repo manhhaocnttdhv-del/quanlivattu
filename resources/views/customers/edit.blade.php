@@ -39,6 +39,22 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+
+                    @if(auth()->check() && auth()->user()->role === 'Admin tổng')
+                    <div class="mb-3">
+                        <label for="warehouse_id" class="form-label">Gán Khách hàng cho Kho (Tùy chọn)</label>
+                        <select class="form-select @error('warehouse_id') is-invalid @enderror" id="warehouse_id" name="warehouse_id">
+                            <option value="">-- Dùng chung toàn hệ thống --</option>
+                            @foreach($warehouses as $wh)
+                            <option value="{{ $wh->id }}" {{ old('warehouse_id', $customer->warehouse_id) == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+                            @endforeach
+                        </select>
+                        <small class="form-text text-muted">Nếu để trống, khách hàng này sẽ được dùng chung cho tất cả các kho.</small>
+                        @error('warehouse_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    @endif
                 </div>
                 <!-- /.card-body -->
 

@@ -23,7 +23,13 @@
         <div class="card mb-4">
             <div class="card-header">
                 <h3 class="card-title">Danh sách Phiếu nhập</h3>
-                <div class="card-tools">
+                <div class="card-tools d-flex gap-2">
+                    <a href="{{ route('inventory-entries.export-excel') }}" class="btn btn-sm btn-success">
+                        <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+                    </a>
+                    <a href="{{ route('inventory-entries.export-pdf') }}" class="btn btn-sm btn-danger">
+                        <i class="bi bi-file-earmark-pdf"></i> Xuất PDF
+                    </a>
                     <a href="{{ route('inventory-entries.create') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-lg"></i> Lập phiếu nhập
                     </a>
@@ -60,9 +66,23 @@
                                     <span class="badge text-bg-secondary">{{ $entry->status }}</span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="d-flex gap-1">
                                 <a href="{{ route('inventory-entries.show', $entry) }}" class="btn btn-sm btn-info text-white">Xem</a>
-                                <!-- Edit/Delete restricted in logic -->
+                                @if($entry->status === 'pending')
+                                    <form action="{{ route('inventory-entries.approve', $entry) }}" method="POST" class="d-inline" onsubmit="return confirm('Duyệt phiếu này và cộng số lượng vào tồn kho?');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
+                                    </form>
+                                    <form action="{{ route('inventory-entries.cancel', $entry) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu này?');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                                    </form>
+                                @elseif($entry->status === 'completed')
+                                    <form action="{{ route('inventory-entries.cancel', $entry) }}" method="POST" class="d-inline" onsubmit="return confirm('CẢNH BÁO: Hủy phiếu đã duyệt sẽ trừ lại hệ thống số lượng tồn kho tương ứng. Chắc chắn?');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                         @empty

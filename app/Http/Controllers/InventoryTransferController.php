@@ -13,7 +13,14 @@ class InventoryTransferController extends Controller
 {
     public function index()
     {
-        $transfers = InventoryTransfer::with(['fromWarehouse', 'toWarehouse', 'user'])->latest()->paginate(10);
+        $query = InventoryTransfer::with(['fromWarehouse', 'toWarehouse', 'user'])->latest();
+        if (Auth::user()->role !== 'Admin tổng') {
+            $query->where(function($q) {
+                $q->where('from_warehouse_id', Auth::user()->warehouse_id)
+                  ->orWhere('to_warehouse_id', Auth::user()->warehouse_id);
+            });
+        }
+        $transfers = $query->paginate(10);
         return view('inventory_transfers.index', compact('transfers'));
     }
 
@@ -35,7 +42,7 @@ class InventoryTransferController extends Controller
         return view('inventory_transfers.create', compact('fromWarehouses', 'toWarehouses', 'materials'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, \App\Services\InventoryService $inventoryService)
     {
         $validated = $request->validate([
             'date' => 'required|date',
@@ -55,12 +62,17 @@ class InventoryTransferController extends Controller
                 'from_warehouse_id' => $validated['from_warehouse_id'],
                 'to_warehouse_id' => $validated['to_warehouse_id'],
                 'user_id' => Auth::id(),
-                'status' => 'completed',
+                'status' => 'pending',
                 'note' => $validated['note'],
             ]);
 
             foreach ($validated['materials'] as $item) {
-                // Again, a real system checks stock in from_warehouse and updates both warehouses
+                // Validate stock locally before allowing creation, even as pending
+                $currentStock = $inventoryService->getStock($validated['from_warehouse_id'], $item['id']);
+                if ($currentStock < $item['quantity']) {
+                    throw new \Exception("Vật tư ID {$item['id']} không đủ tồn kho (hiện tại: {$currentStock}, yêu cầu: {$item['quantity']}) tại kho Nguồn.");
+                }
+
                 $transfer->details()->create([
                     'material_id' => $item['id'],
                     'quantity' => $item['quantity'],
@@ -68,7 +80,7 @@ class InventoryTransferController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('inventory-transfers.index')->with('success', 'Tạo phiếu chuyển kho thành công!');
+            return redirect()->route('inventory-transfers.index')->with('success', 'Tạo phiếu chuyển kho thành công! Phiếu đang chờ duyệt.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())->withInput();
@@ -79,6 +91,83 @@ class InventoryTransferController extends Controller
     {
         $inventoryTransfer->load(['fromWarehouse', 'toWarehouse', 'user', 'details.material.unit']);
         return view('inventory_transfers.show', compact('inventoryTransfer'));
+    }
+
+    public function approve(InventoryTransfer $inventoryTransfer, \App\Services\InventoryService $inventoryService)
+    {
+        if ($inventoryTransfer->status !== 'pending') {
+            return back()->with('error', 'Chỉ có thể duyệt phiếu đang chờ.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($inventoryTransfer->details as $detail) {
+                // Subtract from source
+                $inventoryService->updateStock(
+                    $inventoryTransfer->from_warehouse_id,
+                    $detail->material_id,
+                    $detail->quantity,
+                    'subtract'
+                );
+
+                // Add to destination
+                $inventoryService->updateStock(
+                    $inventoryTransfer->to_warehouse_id,
+                    $detail->material_id,
+                    $detail->quantity,
+                    'add'
+                );
+            }
+
+            $inventoryTransfer->update(['status' => 'completed']);
+
+            DB::commit();
+            return back()->with('success', 'Đã duyệt chuyển kho và điều chỉnh tồn!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Lỗi khi duyệt: ' . $e->getMessage());
+        }
+    }
+
+    public function cancel(InventoryTransfer $inventoryTransfer, \App\Services\InventoryService $inventoryService)
+    {
+        if ($inventoryTransfer->status === 'cancelled') {
+            return back()->with('error', 'Phiếu đã bị hủy.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // If it was completed, we need to reverse both operations
+            if ($inventoryTransfer->status === 'completed') {
+                foreach ($inventoryTransfer->details as $detail) {
+                    // Add back to source
+                    $inventoryService->updateStock(
+                        $inventoryTransfer->from_warehouse_id,
+                        $detail->material_id,
+                        $detail->quantity,
+                        'add'
+                    );
+
+                    // Subtract from destination
+                    $inventoryService->updateStock(
+                        $inventoryTransfer->to_warehouse_id,
+                        $detail->material_id,
+                        $detail->quantity,
+                        'subtract'
+                    );
+                }
+            }
+
+            $inventoryTransfer->update(['status' => 'cancelled']);
+
+            DB::commit();
+            return back()->with('success', 'Đã hủy phiếu chuyển kho thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Lỗi khi hủy: ' . $e->getMessage());
+        }
     }
 
     public function edit(string $id)
@@ -93,6 +182,6 @@ class InventoryTransferController extends Controller
 
     public function destroy(string $id)
     {
-        return redirect()->route('inventory-transfers.index')->with('error', 'Chức năng xóa phiếu chuyển kho đang được xây dựng.');
+        return redirect()->route('inventory-transfers.index')->with('error', 'Vui lòng sử dụng tính năng Hủy Phiếu thay vì xóa vĩnh viễn.');
     }
 }

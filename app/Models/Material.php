@@ -15,4 +15,11 @@ class Material extends Model
     {
         return $this->belongsTo(Unit::class);
     }
+
+    public function warehouses()
+    {
+        return $this->belongsToMany(Warehouse::class, 'material_warehouses')
+                    ->withPivot('stock')
+                    ->withTimestamps();
+    }
 }

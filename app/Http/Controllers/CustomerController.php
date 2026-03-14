@@ -9,13 +9,23 @@ class CustomerController extends Controller
 {
     public function index()
     {
-        $customers = Customer::latest()->paginate(10);
+        $query = Customer::with('warehouse')->latest();
+
+        if (auth()->check() && auth()->user()->role !== 'Admin tổng') {
+            $query->where('warehouse_id', auth()->user()->warehouse_id)->orWhereNull('warehouse_id');
+        }
+
+        $customers = $query->paginate(10);
         return view('customers.index', compact('customers'));
     }
 
     public function create()
     {
-        return view('customers.create');
+        $warehouses = [];
+        if (auth()->check() && auth()->user()->role === 'Admin tổng') {
+            $warehouses = \App\Models\Warehouse::all();
+        }
+        return view('customers.create', compact('warehouses'));
     }
 
     public function store(Request $request)
@@ -24,10 +34,15 @@ class CustomerController extends Controller
             'name' => 'required|string|max:255|unique:customers',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
+            'warehouse_id' => 'nullable|exists:warehouses,id',
         ], [
             'name.required' => 'Tên khách hàng không được để trống.',
             'name.unique' => 'Tên khách hàng đã tồn tại.',
         ]);
+
+        if (auth()->user()->role !== 'Admin tổng') {
+            $validated['warehouse_id'] = auth()->user()->warehouse_id;
+        }
 
         Customer::create($validated);
         return redirect()->route('customers.index')->with('success', 'Thêm khách hàng thành công!');
@@ -40,7 +55,11 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
-        return view('customers.edit', compact('customer'));
+        $warehouses = [];
+        if (auth()->check() && auth()->user()->role === 'Admin tổng') {
+            $warehouses = \App\Models\Warehouse::all();
+        }
+        return view('customers.edit', compact('customer', 'warehouses'));
     }
 
     public function update(Request $request, Customer $customer)
@@ -49,10 +68,15 @@ class CustomerController extends Controller
             'name' => 'required|string|max:255|unique:customers,name,' . $customer->id,
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
+            'warehouse_id' => 'nullable|exists:warehouses,id',
         ], [
             'name.required' => 'Tên khách hàng không được để trống.',
             'name.unique' => 'Tên khách hàng đã tồn tại.',
         ]);
+
+        if (auth()->user()->role !== 'Admin tổng') {
+            $validated['warehouse_id'] = auth()->user()->warehouse_id;
+        }
 
         $customer->update($validated);
         return redirect()->route('customers.index')->with('success', 'Cập nhật khách hàng thành công!');

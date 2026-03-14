@@ -9,13 +9,23 @@ class SupplierController extends Controller
 {
     public function index()
     {
-        $suppliers = Supplier::latest()->paginate(10);
+        $query = Supplier::with('warehouse')->latest();
+
+        if (auth()->check() && auth()->user()->role !== 'Admin tổng') {
+            $query->where('warehouse_id', auth()->user()->warehouse_id)->orWhereNull('warehouse_id');
+        }
+
+        $suppliers = $query->paginate(10);
         return view('suppliers.index', compact('suppliers'));
     }
 
     public function create()
     {
-        return view('suppliers.create');
+        $warehouses = [];
+        if (auth()->check() && auth()->user()->role === 'Admin tổng') {
+            $warehouses = \App\Models\Warehouse::all();
+        }
+        return view('suppliers.create', compact('warehouses'));
     }
 
     public function store(Request $request)
@@ -24,10 +34,15 @@ class SupplierController extends Controller
             'name' => 'required|string|max:255|unique:suppliers',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
+            'warehouse_id' => 'nullable|exists:warehouses,id',
         ], [
             'name.required' => 'Tên nhà cung cấp không được để trống.',
             'name.unique' => 'Tên nhà cung cấp đã tồn tại.',
         ]);
+
+        if (auth()->user()->role !== 'Admin tổng') {
+            $validated['warehouse_id'] = auth()->user()->warehouse_id;
+        }
 
         Supplier::create($validated);
         return redirect()->route('suppliers.index')->with('success', 'Thêm nhà cung cấp thành công!');
@@ -40,7 +55,11 @@ class SupplierController extends Controller
 
     public function edit(Supplier $supplier)
     {
-        return view('suppliers.edit', compact('supplier'));
+        $warehouses = [];
+        if (auth()->check() && auth()->user()->role === 'Admin tổng') {
+            $warehouses = \App\Models\Warehouse::all();
+        }
+        return view('suppliers.edit', compact('supplier', 'warehouses'));
     }
 
     public function update(Request $request, Supplier $supplier)
@@ -49,10 +68,15 @@ class SupplierController extends Controller
             'name' => 'required|string|max:255|unique:suppliers,name,' . $supplier->id,
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
+            'warehouse_id' => 'nullable|exists:warehouses,id',
         ], [
             'name.required' => 'Tên nhà cung cấp không được để trống.',
             'name.unique' => 'Tên nhà cung cấp đã tồn tại.',
         ]);
+
+        if (auth()->user()->role !== 'Admin tổng') {
+            $validated['warehouse_id'] = auth()->user()->warehouse_id;
+        }
 
         $supplier->update($validated);
         return redirect()->route('suppliers.index')->with('success', 'Cập nhật nhà cung cấp thành công!');

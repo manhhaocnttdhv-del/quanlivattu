@@ -6,6 +6,20 @@
 @section('content')
 <div class="row">
     <div class="col-md-10 mx-auto">
+        <!-- Messages -->
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div class="card card-primary card-outline mb-4">
             <div class="card-header">
                 <div class="card-title">Thông tin phiếu nhập</div>
@@ -42,7 +56,7 @@
                             <select class="form-select @error('supplier_id') is-invalid @enderror" id="supplier_id" name="supplier_id" required>
                                 <option value="">-- Chọn Nhà cung cấp --</option>
                                 @foreach($suppliers as $supplier)
-                                <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>{{ $supplier->name }}</option>
+                                <option value="{{ $supplier->id }}" data-warehouse-id="{{ $supplier->warehouse_id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>{{ $supplier->name }}</option>
                                 @endforeach
                             </select>
                             @error('supplier_id')
@@ -172,6 +186,38 @@
             let newRowHtml = template.replace(/__INDEX__/g, materialIndex);
             listBody.insertAdjacentHTML('beforeend', newRowHtml);
             materialIndex++;
+        }
+
+        // Supplier filtering based on warehouse
+        const warehouseSelect = document.getElementById('warehouse_id');
+        const supplierSelect = document.getElementById('supplier_id');
+
+        function filterSuppliers() {
+            const selectedWarehouse = warehouseSelect.value;
+            let currentSupplierValid = false;
+
+            Array.from(supplierSelect.options).forEach(option => {
+                if (!option.value) return; // Skip dummy option
+                
+                const supplierWarehouseId = option.getAttribute('data-warehouse-id');
+                // Show if supplier is global (no warehouse) or matches selected warehouse
+                if (!supplierWarehouseId || supplierWarehouseId === selectedWarehouse) {
+                    option.style.display = '';
+                    if (option.selected) currentSupplierValid = true;
+                } else {
+                    option.style.display = 'none';
+                    if (option.selected) {
+                        option.selected = false;
+                        supplierSelect.value = '';
+                    }
+                }
+            });
+        }
+
+        warehouseSelect.addEventListener('change', filterSuppliers);
+        // Run once on load
+        if (warehouseSelect.value) {
+            filterSuppliers();
         }
     });
 </script>

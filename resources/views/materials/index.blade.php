@@ -10,9 +10,11 @@
             <div class="card-header">
                 <h3 class="card-title">Danh sách</h3>
                 <div class="card-tools">
+                    @if(auth()->check() && auth()->user()->role === 'Admin tổng')
                     <a href="{{ route('materials.create') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-lg"></i> Thêm mới
                     </a>
+                    @endif
                 </div>
             </div>
             <!-- /.card-header -->
@@ -26,7 +28,9 @@
                             <th>Mô tả</th>
                             <th>Tồn kho tối thiểu</th>
                             <th>Tồn kho tối đa</th>
+                            @if(auth()->check() && auth()->user()->role === 'Admin tổng')
                             <th style="width: 150px">Thao tác</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -38,6 +42,7 @@
                             <td>{{ $material->description }}</td>
                             <td>{{ $material->min_stock }}</td>
                             <td>{{ $material->max_stock }}</td>
+                            @if(auth()->check() && auth()->user()->role === 'Admin tổng')
                             <td>
                                 <a href="{{ route('materials.edit', $material) }}" class="btn btn-sm btn-warning">Sửa</a>
                                 <form action="{{ route('materials.destroy', $material) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
@@ -46,6 +51,7 @@
                                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                                 </form>
                             </td>
+                            @endif
                         </tr>
                         @empty
                         <tr>
