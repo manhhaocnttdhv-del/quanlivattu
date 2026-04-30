@@ -36,15 +36,15 @@ class MockDataSeeder extends Seeder
             Supplier::firstOrCreate(['name' => $s['name']], $s);
         }
 
-        // 2. Seed Customers
-        $customers = [
-            ['name' => 'Công trình Vinhome Ocean Park', 'address' => 'Gia Lâm, Hà Nội', 'phone' => '0912345678', 'warehouse_id' => $khoHN->id],
-            ['name' => 'Dự án Cầu Hàm Rồng mới', 'address' => 'Thanh Hóa', 'phone' => '0987654321', 'warehouse_id' => $khoTH->id],
-            ['name' => 'Công ty Xây dựng Delta', 'address' => 'Toàn quốc', 'phone' => '0900112233', 'warehouse_id' => null],
+        // 2. Seed Projects
+        $projects = [
+            ['name' => 'Công trình Tòa nhà A', 'phone' => '098111', 'address' => 'Quận 1'],
+            ['name' => 'Dự án Cầu Trường Tiền', 'phone' => '098222', 'address' => 'Quận 2'],
+            ['name' => 'Biệt thự ABC', 'phone' => '098333', 'address' => 'Quận 3'],
         ];
 
-        foreach ($customers as $c) {
-            Customer::firstOrCreate(['name' => $c['name']], $c);
+        foreach ($projects as $p) {
+            \App\Models\Project::firstOrCreate(['name' => $p['name']], $p);
         }
 
         // 3. Transactions (Entries)
@@ -94,15 +94,15 @@ class MockDataSeeder extends Seeder
 
         // 5. Exits (Shipments)
         if ($material) {
-            $customer = Customer::first();
+            $project = \App\Models\Project::first();
             for ($i = 0; $i < 3; $i++) {
                 $exit = InventoryExit::create([
                     'warehouse_id' => $khoHN->id,
-                    'customer_id' => $customer->id,
+                    'project_id' => $project->id,
                     'user_id' => $admin->id,
                     'date' => Carbon::now()->subDays(rand(1, 10)),
                     'status' => 'completed',
-                    'note' => 'Xuất hàng cho khách hàng đợt ' . ($i + 1),
+                    'note' => 'Xuất hàng cho dự án đợt ' . ($i + 1),
                 ]);
 
                 $exit->details()->create([

@@ -146,7 +146,7 @@
               </li>
               
               <li class="nav-header">QUẢN LÝ</li>
-              @if(auth()->check() && auth()->user()->role === 'Admin tổng')
+              @if(auth()->check() && auth()->user()->hasRole(['Admin tổng', 'Admin kho']))
               <li class="nav-item">
                 <a href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-house-door"></i>
@@ -177,8 +177,8 @@
                     </li>
                 </ul>
               </li>
-              <li class="nav-item {{ request()->routeIs('suppliers.*') || request()->routeIs('customers.*') ? 'menu-open' : '' }}">
-                  <a href="#" class="nav-link {{ request()->routeIs('suppliers.*') || request()->routeIs('customers.*') ? 'active' : '' }}">
+              <li class="nav-item {{ request()->routeIs('suppliers.*') || request()->routeIs('projects.*') ? 'menu-open' : '' }}">
+                  <a href="#" class="nav-link {{ request()->routeIs('suppliers.*') || request()->routeIs('projects.*') ? 'active' : '' }}">
                       <i class="nav-icon bi bi-people"></i>
                       <p>
                           Đối tác
@@ -193,14 +193,14 @@
                           </a>
                       </li>
                       <li class="nav-item">
-                          <a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}">
-                              <i class="nav-icon bi bi-circle"></i>
-                              <p>Khách hàng</p>
+                          <a href="{{ route('projects.index') }}" class="nav-link {{ request()->routeIs('projects.*') ? 'active' : '' }}">
+                              <i class="bi bi-circle nav-icon"></i>
+                              <p>Công trình (Dự án)</p>
                           </a>
                       </li>
                   </ul>
               </li>
-              @if(auth()->check() && auth()->user()->role === 'Admin tổng')
+              @if(auth()->check() && auth()->user()->isAdminTong())
               <li class="nav-item">
                 <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-person-badge"></i>
@@ -208,9 +208,9 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="{{ route('audit-logs.index') }}" class="nav-link {{ request()->routeIs('audit-logs.index') ? 'active' : '' }}">
-                  <i class="nav-icon bi bi-clock-history"></i>
-                  <p>Nhật ký hoạt động</p>
+                <a href="{{ route('permissions.index') }}" class="nav-link {{ request()->routeIs('permissions.*') ? 'active' : '' }}">
+                  <i class="nav-icon bi bi-shield-lock"></i>
+                  <p>Phân quyền</p>
                 </a>
               </li>
               @endif

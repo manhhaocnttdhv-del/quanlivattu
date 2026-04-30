@@ -55,7 +55,7 @@
                             <td>#{{ $exit->id }}</td>
                             <td>{{ \Carbon\Carbon::parse($exit->date)->format('d/m/Y') }}</td>
                             <td>{{ $exit->warehouse->name ?? 'N/A' }}</td>
-                            <td>{{ $exit->customer->name ?? 'N/A' }}</td>
+                            <td>{{ $exit->project->name ?? 'N/A' }}</td>
                             <td>{{ $exit->user->name ?? 'N/A' }}</td>
                             <td>
                                 @if($exit->status == 'completed')

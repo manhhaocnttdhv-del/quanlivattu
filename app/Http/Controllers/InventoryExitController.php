@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\InventoryExit;
 use App\Models\Warehouse;
-use App\Models\Customer;
+use App\Models\Project;
 use App\Models\Material;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +14,7 @@ class InventoryExitController extends Controller
 {
     public function index()
     {
-        $query = InventoryExit::with(['warehouse', 'customer', 'user'])->latest();
+        $query = InventoryExit::with(['warehouse', 'project', 'user'])->latest();
         if (Auth::user()->role !== 'Admin tổng') {
             $query->where('warehouse_id', Auth::user()->warehouse_id);
         }
@@ -29,9 +29,9 @@ class InventoryExitController extends Controller
             $warehouses = $warehouses->where('id', Auth::user()->warehouse_id);
         }
 
-        $customers = Auth::user()->role === 'Admin tổng'
-            ? Customer::all()
-            : Customer::where(function($q) {
+        $projects = Auth::user()->role === 'Admin tổng'
+            ? Project::all()
+            : Project::where(function($q) {
                 $q->where('warehouse_id', Auth::user()->warehouse_id)
                   ->orWhereNull('warehouse_id');
             })->get();
@@ -43,7 +43,7 @@ class InventoryExitController extends Controller
             }
         }])->get();
 
-        return view('inventory_exits.create', compact('warehouses', 'customers', 'materials'));
+        return view('inventory_exits.create', compact('warehouses', 'projects', 'materials'));
     }
 
     public function store(Request $request, \App\Services\InventoryService $inventoryService)
@@ -51,7 +51,7 @@ class InventoryExitController extends Controller
         $validated = $request->validate([
             'date' => 'required|date',
             'warehouse_id' => 'required|exists:warehouses,id',
-            'customer_id' => 'required|exists:customers,id',
+            'project_id' => 'required|exists:projects,id',
             'note' => 'nullable|string',
             'materials' => 'required|array|min:1',
             'materials.*.id' => 'required|exists:materials,id',
@@ -65,7 +65,7 @@ class InventoryExitController extends Controller
             $exit = InventoryExit::create([
                 'date' => $validated['date'],
                 'warehouse_id' => $validated['warehouse_id'],
-                'customer_id' => $validated['customer_id'],
+                'project_id' => $validated['project_id'],
                 'user_id' => Auth::id(),
                 'status' => 'pending',
                 'note' => $validated['note'],
@@ -76,6 +76,25 @@ class InventoryExitController extends Controller
                 $currentStock = $inventoryService->getStock($validated['warehouse_id'], $item['id']);
                 if ($currentStock < $item['quantity']) {
                     throw new \Exception("Vật tư ID {$item['id']} không đủ tồn kho (hiện có: {$currentStock}, yêu cầu: {$item['quantity']}) tại kho này.");
+                }
+
+                // Kiểm tra Dự toán (BoQ) của Công trình
+                $estimate = \App\Models\ProjectMaterial::where('project_id', $validated['project_id'])
+                               ->where('material_id', $item['id'])->first();
+                $estimatedQty = $estimate ? $estimate->estimated_quantity : 0;
+
+                if ($estimatedQty <= 0) {
+                    throw new \Exception("Vật tư ID {$item['id']} chưa được cấp định mức dự toán cho công trình này.");
+                }
+
+                // Tính tổng đã xuất (bao gồm cả các phiếu đã duyệt và đang chờ duyệt) để đối chiếu
+                $alreadyExited = \App\Models\InventoryExitDetail::whereHas('inventoryExit', function($q) use ($validated) {
+                    $q->where('project_id', $validated['project_id'])
+                      ->whereIn('status', ['pending', 'completed']);
+                })->where('material_id', $item['id'])->sum('quantity');
+
+                if (($alreadyExited + $item['quantity']) > $estimatedQty) {
+                    throw new \Exception("Vật tư ID {$item['id']} xuất vượt định mức! (Đã xuất+Chờ xuất: {$alreadyExited}, Yêu cầu thêm: {$item['quantity']}, Định mức: {$estimatedQty})");
                 }
 
                 $exit->details()->create([
@@ -95,7 +114,7 @@ class InventoryExitController extends Controller
 
     public function show(InventoryExit $inventoryExit)
     {
-        $inventoryExit->load(['warehouse', 'customer', 'user', 'details.material.unit']);
+        $inventoryExit->load(['warehouse', 'project', 'user', 'details.material.unit']);
         return view('inventory_exits.show', compact('inventoryExit'));
     }
 
@@ -186,7 +205,7 @@ class InventoryExitController extends Controller
 
     public function exportPdf(Request $request)
     {
-        $query = InventoryExit::with(['warehouse', 'customer', 'user'])->latest();
+        $query = InventoryExit::with(['warehouse', 'project', 'user'])->latest();
         if (Auth::user()->role !== 'Admin tổng') {
             $query->where('warehouse_id', Auth::user()->warehouse_id);
         }

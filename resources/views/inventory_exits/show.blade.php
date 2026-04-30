@@ -22,9 +22,9 @@
                 <div class="col-sm-4 invoice-col">
                     Xuất cho Khách hàng
                     <address>
-                        <strong>{{ $inventoryExit->customer->name ?? 'N/A' }}</strong><br>
-                        {{ $inventoryExit->customer->address ?? 'Không có địa chỉ' }}<br>
-                        SĐT: {{ $inventoryExit->customer->phone ?? 'N/A' }}<br>
+                        <strong>{{ $inventoryExit->project->name ?? 'N/A' }}</strong><br>
+                        {{ $inventoryExit->project->address ?? 'Không có địa chỉ' }}<br>
+                        SĐT: {{ $inventoryExit->project->phone ?? 'N/A' }}<br>
                     </address>
                 </div>
                 <!-- /.col -->

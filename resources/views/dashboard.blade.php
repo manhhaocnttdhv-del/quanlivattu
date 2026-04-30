@@ -143,7 +143,7 @@
                         <tr>
                             <td>#{{ $exit->id }}</td>
                             <td>{{ \Carbon\Carbon::parse($exit->date)->format('d/m/Y') }}</td>
-                            <td>{{ $exit->customer->name ?? 'N/A' }}</td>
+                            <td>{{ $exit->project->name ?? 'N/A' }}</td>
                             <td><a href="{{ route('inventory-exits.show', $exit) }}" class="btn btn-xs btn-info"><i class="bi bi-eye text-white"></i></a></td>
                         </tr>
                         @empty

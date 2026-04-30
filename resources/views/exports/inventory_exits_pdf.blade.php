@@ -50,7 +50,7 @@
                 <td class="text-center">PX-{{ str_pad($exit->id, 5, '0', STR_PAD_LEFT) }}</td>
                 <td class="text-center">{{ \Carbon\Carbon::parse($exit->date)->format('d/m/Y') }}</td>
                 <td>{{ $exit->warehouse->name ?? '' }}</td>
-                <td>{{ $exit->customer->name ?? '' }}</td>
+                <td>{{ $exit->project->name ?? '' }}</td>
                 <td>{{ $exit->user->name ?? '' }}</td>
                 <td class="text-center">
                     @if($exit->status == 'completed') Đã duyệt

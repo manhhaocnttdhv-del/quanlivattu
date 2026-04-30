@@ -52,14 +52,14 @@
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="customer_id" class="form-label">Khách hàng <span class="text-danger">*</span></label>
-                            <select class="form-select @error('customer_id') is-invalid @enderror" id="customer_id" name="customer_id" required>
-                                <option value="">-- Chọn Khách hàng --</option>
-                                @foreach($customers as $customer)
-                                <option value="{{ $customer->id }}" data-warehouse-id="{{ $customer->warehouse_id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>{{ $customer->name }}</option>
+                            <label for="project_id" class="form-label">Công trình <span class="text-danger">*</span></label>
+                            <select class="form-select @error('project_id') is-invalid @enderror" id="project_id" name="project_id" required>
+                                <option value="">-- Chọn Công trình --</option>
+                                @foreach($projects as $project)
+                                <option value="{{ $project->id }}" data-warehouse-id="{{ $project->warehouse_id }}" {{ old('project_id') == $project->id ? 'selected' : '' }}>{{ $project->name }}</option>
                                 @endforeach
                             </select>
-                            @error('customer_id')
+                            @error('project_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -206,7 +206,7 @@
         }
 
         const warehouseSelect = document.getElementById('warehouse_id');
-        const customerSelect = document.getElementById('customer_id');
+        const projectSelect = document.getElementById('project_id');
 
         form.addEventListener('submit', function(e) {
             if (listBody.querySelectorAll('tr').length === 0) {
@@ -221,19 +221,18 @@
             materialIndex++;
         }
 
-        function filterCustomers() {
+        function filterProjects() {
             const selectedWarehouse = warehouseSelect.value;
-            Array.from(customerSelect.options).forEach(option => {
-                if (!option.value) return; 
+            Array.from(projectSelect.options).forEach(option => {
+                if (option.value === '') return;
                 
-                const customerWarehouseId = option.getAttribute('data-warehouse-id');
-                if (!customerWarehouseId || customerWarehouseId === selectedWarehouse) {
+                const projectWarehouseId = option.getAttribute('data-warehouse-id');
+                if (!projectWarehouseId || projectWarehouseId === selectedWarehouse) {
                     option.style.display = '';
                 } else {
                     option.style.display = 'none';
-                    if (option.selected) {
-                        option.selected = false;
-                        customerSelect.value = '';
+                    if (projectSelect.value === option.value) {
+                        projectSelect.value = '';
                     }
                 }
             });

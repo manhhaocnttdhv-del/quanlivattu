@@ -39,7 +39,7 @@ class DashboardController extends Controller
 
         // Basic recent activity
         $recent_entries_qb = InventoryEntry::with('warehouse', 'supplier')->latest()->take(5);
-        $recent_exits_qb = InventoryExit::with('warehouse', 'customer')->latest()->take(5);
+        $recent_exits_qb = InventoryExit::with('warehouse', 'project')->latest()->take(5);
         
         if ($user && $user->role !== 'Admin tổng') {
             $recent_entries_qb->where('warehouse_id', $user->warehouse_id);

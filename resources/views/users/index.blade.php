@@ -40,7 +40,7 @@
                             <th>Vai trò</th>
                             <th>Kho quản lý/làm việc</th>
                             <th>Trạng thái</th>
-                            <th style="width: 150px">Thao tác</th>
+                            <th style="width: 210px">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,6 +68,7 @@
                             </td>
                             <td>
                                 <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-warning">Sửa</a>
+
                                 <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa user này không?');">
                                     @csrf
                                     @method('DELETE')

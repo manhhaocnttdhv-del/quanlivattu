@@ -9,16 +9,16 @@ class InventoryExit extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['date', 'warehouse_id', 'customer_id', 'user_id', 'status'];
+    protected $fillable = ['date', 'warehouse_id', 'project_id', 'user_id', 'status'];
 
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class);
     }
 
-    public function customer()
+    public function project()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Project::class);
     }
 
     public function user()

@@ -97,7 +97,7 @@ class InventoryCheckController extends Controller
             DB::beginTransaction();
 
             $supplierId = \App\Models\Supplier::first()->id ?? 1; // Generic fallbacks for adjustments
-            $customerId = \App\Models\Customer::first()->id ?? 1; 
+            $projectId = \App\Models\Project::first()->id ?? 1; 
 
             // Create Adjustments if variance exists
             $positiveVariances = []; // Needs Entry
@@ -134,7 +134,7 @@ class InventoryCheckController extends Controller
             if (count($negativeVariances) > 0) {
                 $exit = \App\Models\InventoryExit::create([
                     'date' => now(), 'warehouse_id' => $inventoryCheck->warehouse_id,
-                    'customer_id' => $customerId, 'user_id' => Auth::id(),
+                    'project_id' => $projectId, 'user_id' => Auth::id(),
                     'status' => 'completed', 'note' => 'Điều chỉnh kho (Kiểm kê #' . $inventoryCheck->id . ')'
                 ]);
                 foreach ($negativeVariances as $item) {
