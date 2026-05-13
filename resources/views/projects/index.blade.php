@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'Quản lý Khách hàng')
-@section('header', 'Danh sách Khách hàng')
+@section('title', 'Quản lý Công trình')
+@section('header', 'Danh sách Công trình')
 
 @section('content')
 <div class="row">
@@ -25,7 +25,7 @@
                 <h3 class="card-title">Danh sách</h3>
                 <div class="card-tools">
                     @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
-                    <a href="{{ route('customers.create') }}" class="btn btn-sm btn-primary">
+                    <a href="{{ route('projects.create') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-lg"></i> Thêm mới
                     </a>
                     @endif
@@ -37,25 +37,26 @@
                     <thead>
                         <tr>
                             <th style="width: 10px">#</th>
-                            <th>Tên khách hàng</th>
+                            <th>Tên công trình</th>
                             <th>Số điện thoại</th>
                             <th>Địa chỉ</th>
                             @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
-                            <th style="width: 150px">Thao tác</th>
+                            <th style="width: 250px">Thao tác</th>
                             @endif
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($customers as $customer)
+                        @forelse($projects as $project)
                         <tr class="align-middle">
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $customer->name }}</td>
-                            <td>{{ $customer->phone ?? 'N/A' }}</td>
-                            <td>{{ $customer->address ?? 'N/A' }}</td>
+                            <td>{{ $project->name }}</td>
+                            <td>{{ $project->phone ?? 'N/A' }}</td>
+                            <td>{{ $project->address ?? 'N/A' }}</td>
                             @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
                             <td>
-                                <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-warning">Sửa</a>
-                                <form action="{{ route('customers.destroy', $customer) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
+                                <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-info">Chi tiết / Định mức</a>
+                                <a href="{{ route('projects.edit', $project) }}" class="btn btn-sm btn-warning">Sửa</a>
+                                <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
@@ -73,7 +74,7 @@
             </div>
             <!-- /.card-body -->
             <div class="card-footer clearfix">
-                {{ $customers->links() }}
+                {{ $projects->links() }}
             </div>
         </div>
         <!-- /.card -->

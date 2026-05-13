@@ -9,8 +9,16 @@
         <div class="card mb-4">
             <div class="card-header">
                 <h3 class="card-title">Danh sách</h3>
-                <div class="card-tools">
+                <div class="card-tools d-flex gap-2 align-items-center">
                     @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
+                    <form action="{{ route('materials.import') }}" method="POST" enctype="multipart/form-data" class="d-flex gap-1 mb-0" onsubmit="if(!this.file.value) { alert('Vui lòng chọn file Excel!'); return false; }">
+                        @csrf
+                        <input type="file" name="file" class="form-control form-control-sm" accept=".xlsx, .xls, .csv" required style="max-width: 200px;">
+                        <button type="submit" class="btn btn-sm btn-info text-white"><i class="bi bi-upload"></i> Import</button>
+                    </form>
+                    <a href="{{ route('materials.export') }}" class="btn btn-sm btn-success">
+                        <i class="bi bi-download"></i> Export
+                    </a>
                     <a href="{{ route('materials.create') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-lg"></i> Thêm mới
                     </a>

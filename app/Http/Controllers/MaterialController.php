@@ -64,4 +64,23 @@ class MaterialController extends Controller
         $material->delete();
         return redirect()->route('materials.index')->with('success', 'Xóa vật tư thành công!');
     }
+
+    public function export()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\MaterialsExport, 'danh-sach-vat-tu.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ]);
+
+        try {
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\MaterialsImport, $request->file('file'));
+            return redirect()->route('materials.index')->with('success', 'Nhập dữ liệu vật tư thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('materials.index')->with('error', 'Lỗi nhập dữ liệu: ' . $e->getMessage());
+        }
+    }
 }

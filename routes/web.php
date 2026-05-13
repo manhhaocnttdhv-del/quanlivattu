@@ -24,12 +24,15 @@ use App\Http\Controllers\InventoryEntryController;
 use App\Http\Controllers\InventoryExitController;
 use App\Http\Controllers\InventoryTransferController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\InventoryAlertController;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     // Management routes restricted to Admins (Create, Store, Edit, Update, Destroy)
     // Defined BEFORE base routes to ensure 'create' is not shadowed by '{material}'
     Route::middleware(['role:Admin tổng,Admin kho'])->group(function () {
+        Route::get('materials-export', [MaterialController::class, 'export'])->name('materials.export');
+        Route::post('materials-import', [MaterialController::class, 'import'])->name('materials.import');
         Route::resource('materials', MaterialController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
         Route::resource('units', UnitController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
         Route::resource('suppliers', SupplierController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
@@ -63,6 +66,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('inventory-checks/{inventory_check}/cancel', [\App\Http\Controllers\InventoryCheckController::class, 'cancel'])->name('inventory-checks.cancel');
     });
     Route::resource('inventory-checks', \App\Http\Controllers\InventoryCheckController::class);
+    
+    // Inventory Alerts
+    Route::get('/inventory-alerts', [InventoryAlertController::class, 'index'])->name('inventory-alerts.index')->middleware('role:Admin tổng,Admin kho');
+    Route::post('/inventory-alerts/{inventory_alert}/resolve', [InventoryAlertController::class, 'resolve'])->name('inventory-alerts.resolve')->middleware('role:Admin tổng,Admin kho');
     
     // Reports
     Route::get('/reports/inventory', [\App\Http\Controllers\ReportController::class, 'inventory'])->name('reports.inventory');

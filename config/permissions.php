@@ -152,6 +152,22 @@ return [
     ],
 
     [
+        'group' => 'Cảnh báo Tồn kho',
+        'permissions' => [
+            [
+                'name'        => 'Xem cảnh báo tồn kho',
+                'description' => 'Xem danh sách vật tư dưới mức tồn kho tối thiểu',
+                'roles'       => ['Admin tổng', 'Admin kho'],
+            ],
+            [
+                'name'        => 'Xử lý cảnh báo tồn kho',
+                'description' => 'Đánh dấu đã xử lý cảnh báo',
+                'roles'       => ['Admin tổng', 'Admin kho'],
+            ],
+        ],
+    ],
+
+    [
         'group' => 'Quản lý Người dùng',
         'permissions' => [
             [
