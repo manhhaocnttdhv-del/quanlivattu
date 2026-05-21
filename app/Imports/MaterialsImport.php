@@ -21,7 +21,9 @@ class MaterialsImport implements ToModel, WithHeadingRow
         }
 
         // Try to update existing or create new
-        $warehouseId = auth()->user()->warehouse_id ?? \App\Models\Warehouse::first()->id ?? null;
+        $user = auth()->user();
+        $isWarehouseAdmin = $user && $user->role === 'Admin kho';
+        $warehouseId = $isWarehouseAdmin ? $user->warehouse_id : null;
         $material = Material::find($row['id'] ?? null);
         
         if ($material) {
@@ -29,8 +31,6 @@ class MaterialsImport implements ToModel, WithHeadingRow
                 'name' => $row['ten_vat_tu'],
                 'description' => $row['mo_ta'] ?? $material->description,
                 'unit_id' => $row['don_vi_tinh_id'] ?? $material->unit_id,
-                'min_stock' => $row['ton_toi_thieu'] ?? $material->min_stock,
-                'max_stock' => $row['ton_toi_da'] ?? $material->max_stock,
             ]);
             
             if ($warehouseId) {
@@ -49,8 +49,6 @@ class MaterialsImport implements ToModel, WithHeadingRow
             'name' => $row['ten_vat_tu'],
             'description' => $row['mo_ta'] ?? null,
             'unit_id' => $row['don_vi_tinh_id'] ?? 1,
-            'min_stock' => $row['ton_toi_thieu'] ?? 0,
-            'max_stock' => $row['ton_toi_da'] ?? 0,
         ]);
 
         if ($warehouseId) {

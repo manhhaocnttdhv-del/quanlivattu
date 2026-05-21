@@ -14,6 +14,10 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping
     */
     public function collection()
     {
+        if (auth()->user()->role === 'Admin tổng') {
+            return Material::with('unit')->get();
+        }
+
         $warehouseId = auth()->user()->warehouse_id ?? \App\Models\Warehouse::first()->id ?? null;
         
         return Material::with(['unit', 'warehouseStocks' => function($q) use ($warehouseId) {
@@ -25,6 +29,16 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping
 
     public function headings(): array
     {
+        if (auth()->user()->role === 'Admin tổng') {
+            return [
+                'ID',
+                'Tên Vật Tư',
+                'Mô Tả',
+                'Đơn Vị Tính ID',
+                'Ngày Tạo',
+            ];
+        }
+
         return [
             'ID',
             'Tên Vật Tư',
@@ -34,14 +48,22 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping
             'Giá Bán (VNĐ)',
             'Lợi Nhuận (VNĐ)',
             'Biên LN (%)',
-            'Tồn Tối Thiểu',
-            'Tồn Tối Đa',
             'Ngày Tạo',
         ];
     }
 
     public function map($material): array
     {
+        if (auth()->user()->role === 'Admin tổng') {
+            return [
+                $material->id,
+                $material->name,
+                $material->description,
+                $material->unit_id,
+                $material->created_at ? $material->created_at->format('d/m/Y H:i') : '',
+            ];
+        }
+
         $stockRecord = $material->warehouseStocks->first();
         $costPrice = $stockRecord ? $stockRecord->cost_price : 0;
         $sellingPrice = $stockRecord ? $stockRecord->selling_price : 0;
@@ -57,8 +79,6 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping
             $sellingPrice,
             $profit,
             $profitMargin . '%',
-            $material->min_stock,
-            $material->max_stock,
             $material->created_at ? $material->created_at->format('d/m/Y H:i') : '',
         ];
     }

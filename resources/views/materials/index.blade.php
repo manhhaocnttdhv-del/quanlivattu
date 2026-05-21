@@ -32,6 +32,17 @@
             <!-- Filter Section -->
             <div class="card-body border-bottom pb-3">
                 <form method="GET" action="{{ route('materials.index') }}" class="row g-2 align-items-end">
+                    @if(auth()->user()->role === 'Admin tổng')
+                    <div class="col-md-2">
+                        <label class="form-label small mb-1">Kho hàng</label>
+                        <select name="kho" class="form-select form-select-sm" onchange="this.form.submit()">
+                            @foreach($warehouses as $wh)
+                                <option value="{{ $wh->id }}" {{ $selectedWarehouseId == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+
                     <div class="col-md-2">
                         <label class="form-label small mb-1">Tìm kiếm</label>
                         <input type="text" name="search" class="form-control form-control-sm" placeholder="Tên vật tư..." value="{{ request('search') }}">
@@ -86,10 +97,12 @@
                             <th>Tên vật tư</th>
                             <th>Nhóm</th>
                             <th>Đơn vị tính</th>
+                            @if(auth()->user()->role !== 'Admin tổng')
                             <th class="text-end" style="min-width: 100px;">Tồn kho</th>
                             <th class="text-end">Giá nhập</th>
                             <th class="text-end">Giá bán</th>
                             <th class="text-end">Lợi nhuận</th>
+                            @endif
                             <th>Mô tả</th>
                             @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
                             <th style="width: 220px">Thao tác</th>
@@ -119,6 +132,8 @@
                                 $profit = $sellingPrice - $costPrice;
                                 $profitMargin = $costPrice > 0 ? round(($profit / $costPrice) * 100, 1) : 0;
                             @endphp
+
+                            @if(auth()->user()->role !== 'Admin tổng')
                             <td class="text-end fw-bold">
                                 <span class="badge {{ $stock > 0 ? 'text-bg-success' : 'text-bg-danger' }}">
                                     {{ number_format($stock, 2) }}
@@ -141,6 +156,8 @@
                                     <span class="text-muted">0 ₫</span>
                                 @endif
                             </td>
+                            @endif
+
                             <td>{{ $material->description }}</td>
                             @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
                             <td>
