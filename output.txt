@@ -1,0 +1,18 @@
+<div class="product-desc">
+ <div class="product-title">
+  <h4>
+   <a href="/products/xi-mang-vicem-ha-tien-pcb40">
+    Xi măng Vicem Hà Tiên đa dụng PCB40 50kg/bao
+   </a>
+  </h4>
+  <span>
+  </span>
+ </div>
+ <div class="product-price">
+  <ins>
+   105,000₫
+  </ins>
+ </div>
+</div>
+
+==================================================

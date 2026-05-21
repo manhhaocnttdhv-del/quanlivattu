@@ -1,0 +1,340 @@
+[
+    {
+        "group_name": "Sắt thép xi măng",
+        "products": [
+            {
+                "name": "Xi măng Vicem Hà Tiên đa dụng PCB40 50kg/bao",
+                "price": "105,000₫"
+            },
+            {
+                "name": "Xi măng INSEE Power-S",
+                "price": "95,000₫"
+            },
+            {
+                "name": "Thép cây",
+                "price": "286.000₫"
+            },
+            {
+                "name": "Thép hình H",
+                "price": "200,000₫"
+            },
+            {
+                "name": "Xi măng Hà Tiên Vicem PCB40 50kg/bao",
+                "price": "120,000₫"
+            },
+            {
+                "name": "Thép ống Việt Long",
+                "price": "278.000₫"
+            }
+        ]
+    },
+    {
+        "group_name": "Hóa chất",
+        "products": [
+            {
+                "name": "Vữa chống thấm đàn hồi SikaTop-540 Seal VN",
+                "price": "45,000₫"
+            },
+            {
+                "name": "Sika Latex phụ gia chống thấm và kết nối",
+                "price": "91,000₫"
+            },
+            {
+                "name": "Sikagrout 214-11 vữa rót gốc xi măng bù co ngót",
+                "price": "10,500₫"
+            },
+            {
+                "name": "SikaProof Membrane 20KG - Màng chống thấm gốc Bitum",
+                "price": "445.000₫"
+            },
+            {
+                "name": "SIKA F1 Chống Thấm trộn Xi Măng",
+                "price": "66.000₫"
+            },
+            {
+                "name": "SikaGard 905W : màng chống thấm trong suốt",
+                "price": "269.000₫"
+            },
+            {
+                "name": "SikaSeal 128- Keo silicone Sika",
+                "price": "57,000₫"
+            },
+            {
+                "name": "MasterSeal HLM 5000R- Màng chống thấm đàn hồi",
+                "price": "3,420,000₫"
+            },
+            {
+                "name": "Sikadur 31 CF Normal",
+                "price": "280,000₫"
+            },
+            {
+                "name": "Foam chống cháy Akfix 820/820P",
+                "price": "168,000₫"
+            },
+            {
+                "name": "Sikaflex 140 construction - keo trám khe chuyên dụng",
+                "price": "185,000₫"
+            },
+            {
+                "name": "SikaShield P24 S 3mm màng chống thấm khò nóng",
+                "price": "115,000₫"
+            }
+        ]
+    },
+    {
+        "group_name": "Siêu thị keo",
+        "products": [
+            {
+                "name": "Keo chà ron hồ bơi Cá Sấu Crocodile Platinum",
+                "price": "135,000₫"
+            },
+            {
+                "name": "Keo chà ron 2 thành phần Webercolor shine 360ml",
+                "price": "155,000₫"
+            },
+            {
+                "name": "Keo dán gạch kháng nước SikaCeram-123 Stop Water",
+                "price": "9,000₫"
+            },
+            {
+                "name": "Keo dán gạch Webertai ST250",
+                "price": "180,000₫"
+            },
+            {
+                "name": "Keo chà ron cá sấu Silver Crocodile",
+                "price": "30,000₫"
+            },
+            {
+                "name": "Keo chà ron cá sấu silver crocodile premium plus",
+                "price": "60,000₫"
+            }
+        ]
+    },
+    {
+        "group_name": "Siêu thị sơn",
+        "products": [
+            {
+                "name": "Bột trét tường nội ngoại thất Jotun 40kg",
+                "price": "400,000₫"
+            },
+            {
+                "name": "Bột trét tường nội thất Jotun 40kg",
+                "price": "340,000₫"
+            },
+            {
+                "name": "Chất chống thấm cao cấp KOVA CT-11A Plus Sàn",
+                "price": "200,000₫"
+            },
+            {
+                "name": "Jotun Jotamastic 90 | Sơn Epoxy 2 Thành Phần",
+                "price": "1,050,000₫"
+            },
+            {
+                "name": "Sơn Acrylic Đại Bàng trên bề mặt kẽm S.AC-P1(Zn)",
+                "price": "98,000₫"
+            },
+            {
+                "name": "Sơn chống rỉ VINAGARD V101",
+                "price": "950,000₫"
+            }
+        ]
+    },
+    {
+        "group_name": "Vật tư kim khí",
+        "products": [
+            {
+                "name": "Sơn Acrylic Đại Bàng trên bề mặt kẽm S.AC-P1(Zn)",
+                "price": "98,000₫"
+            },
+            {
+                "name": "Keo silicone Sikasil-119 MP chất trám khe gốc trung tính",
+                "price": "95,000₫"
+            },
+            {
+                "name": "Sơn dầu cao cấp ALKYD Đại Bàng",
+                "price": "90,000₫"
+            },
+            {
+                "name": "Que hàn thép Việt Đức N42-VD",
+                "price": "36,000₫"
+            },
+            {
+                "name": "Que hàn TIG sắt Kiswel T-50",
+                "price": "79,000₫"
+            },
+            {
+                "name": "Sơn dầu Galant Lobster",
+                "price": "75,000₫"
+            }
+        ]
+    },
+    {
+        "group_name": "Phụ kiện nâng hạ",
+        "products": [
+            {
+                "name": "Dây đai nhựa PP đóng hàng",
+                "price": "300,000₫"
+            },
+            {
+                "name": "Dây đai nhựa composite đóng hàng",
+                "price": "1,000,000₫"
+            },
+            {
+                "name": "ỐC SIẾT CÁP",
+                "price": "304.000₫"
+            },
+            {
+                "name": "Cáp Thép",
+                "price": "213.000₫"
+            },
+            {
+                "name": "Dây Cáp Vải Cẩu Hàng Tải 1 Tấn",
+                "price": "27,000₫"
+            },
+            {
+                "name": "Mani",
+                "price": "399.000₫"
+            }
+        ]
+    },
+    {
+        "group_name": "Vật tư hạ tầng",
+        "products": [
+            {
+                "name": "Màng PE đóng gói pallet 50cm 3.5kg",
+                "price": "140,000₫"
+            },
+            {
+                "name": "Màng PE đóng gói pallet 50cm 2.2kg",
+                "price": "100,000₫"
+            },
+            {
+                "name": "Phụ kiện ống nước HDPE trơn",
+                "price": "100,000₫"
+            },
+            {
+                "name": "Matit nhựa đường chèn khe co giãn- Victa BS",
+                "price": "62,000₫"
+            },
+            {
+                "name": "Vải địa kỹ thuật ART7",
+                "price": "8,000₫"
+            },
+            {
+                "name": "Ống nhựa HDPE trơn cấp nước",
+                "price": "217.000₫"
+            }
+        ]
+    },
+    {
+        "group_name": "Máy móc- Thiết bị",
+        "products": [
+            {
+                "name": "Bộ vặn vít đa năng Bosch 38 chi tiết 2607019506",
+                "price": "425,000₫"
+            },
+            {
+                "name": "Xe đẩy hàng 4 bánh sàn thép 4 bánh FUJIHOME SH300",
+                "price": "950,000₫"
+            },
+            {
+                "name": "Máy khoan rút lõi bê tông DongCheng DZZ05-110",
+                "price": "1,850,000₫"
+            },
+            {
+                "name": "Máy bắn đinh dùng hơi Makita AF353",
+                "price": "216.000₫"
+            },
+            {
+                "name": "Máy Cưa Đĩa Bosch GKS 190",
+                "price": "2,352,000₫"
+            },
+            {
+                "name": "Máy cắt sắt / Kim Loại Ingco COS223589",
+                "price": "2,290,000₫"
+            }
+        ]
+    },
+    {
+        "group_name": "Linh kiện lắp ghép",
+        "products": [
+            {
+                "name": "Cùm chữ U",
+                "price": "15,000₫"
+            },
+            {
+                "name": "Ticke đạn",
+                "price": "2,100₫"
+            },
+            {
+                "name": "Bulong nở sắt",
+                "price": "346.000₫"
+            },
+            {
+                "name": "Bu lông nở Spit TrigaZ",
+                "price": "98,600₫"
+            },
+            {
+                "name": "Bulong ren cắt HUS3-C",
+                "price": "387.000₫"
+            },
+            {
+                "name": "Bulong có ren tự cắt cho bê tông HUS - HR 6/8/10/14",
+                "price": "293.000₫"
+            }
+        ]
+    },
+    {
+        "group_name": "Vật tư phụ xây dựng",
+        "products": [
+            {
+                "name": "Lưỡi cưa gỗ hợp kim Makita B-17164",
+                "price": "315,000₫"
+            },
+            {
+                "name": "Mũi khoét lỗ hợp kim Total TAC430501 50mm",
+                "price": "145,000₫"
+            },
+            {
+                "name": "Bánh xe đẩy nylon D32 càng inox 304",
+                "price": "430,000₫"
+            },
+            {
+                "name": "Gỗ kê hàng 100x 100x1000mm giá rẻ",
+                "price": "80,000₫"
+            },
+            {
+                "name": "Dụng cụ siết dây đai nhựa cầm tay",
+                "price": "98.000₫"
+            },
+            {
+                "name": "Thép râu tường",
+                "price": "384.000₫"
+            },
+            {
+                "name": "Bạt xanh cam HQ 6x50m 51kg",
+                "price": "2,900,000₫"
+            },
+            {
+                "name": "Bạt xanh cam HQ 4x50m 34kg",
+                "price": "2,100,000₫"
+            },
+            {
+                "name": "Dây kẽm buộc 1 ly chất lượng giá tốt",
+                "price": "17,600₫"
+            },
+            {
+                "name": "Con kê bê tông 30/35/40mm",
+                "price": "840₫"
+            },
+            {
+                "name": "Con kê bê tông 55/60/70/80mm",
+                "price": "1,680₫"
+            },
+            {
+                "name": "Que hàn Kim Tín KT-421 2.5mm",
+                "price": "29,100₫"
+            }
+        ]
+    }
+]
