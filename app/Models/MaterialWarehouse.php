@@ -9,7 +9,7 @@ class MaterialWarehouse extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['warehouse_id', 'material_id', 'stock', 'location', 'average_cost'];
+    protected $fillable = ['warehouse_id', 'material_id', 'stock', 'location', 'average_cost', 'cost_price', 'selling_price'];
 
     public function warehouse()
     {

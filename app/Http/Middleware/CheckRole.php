@@ -21,7 +21,6 @@ class CheckRole
 
         $userRole = trim($request->user()->role);
         $allowedRoles = array_map('trim', $roles);
-
         if (in_array($userRole, $allowedRoles)) {
             return $next($request);
         }

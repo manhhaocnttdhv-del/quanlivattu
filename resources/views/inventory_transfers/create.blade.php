@@ -43,7 +43,7 @@
                             <select class="form-select @error('from_warehouse_id') is-invalid @enderror" id="from_warehouse_id" name="from_warehouse_id" required>
                                 <option value="">-- Chọn Kho xuất --</option>
                                 @foreach($fromWarehouses as $wh)
-                                <option value="{{ $wh->id }}" {{ old('from_warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+                                <option value="{{ $wh->id }}" {{ old('from_warehouse_id', auth()->user()->warehouse_id) == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
                                 @endforeach
                             </select>
                             @error('from_warehouse_id')

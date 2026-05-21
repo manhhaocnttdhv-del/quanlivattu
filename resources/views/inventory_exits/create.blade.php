@@ -43,7 +43,7 @@
                             <select class="form-select @error('warehouse_id') is-invalid @enderror" id="warehouse_id" name="warehouse_id" required>
                                 <option value="">-- Chọn Kho hàng --</option>
                                 @foreach($warehouses as $wh)
-                                <option value="{{ $wh->id }}" {{ old('warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+                                <option value="{{ $wh->id }}" {{ old('warehouse_id', auth()->user()->warehouse_id) == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
                                 @endforeach
                             </select>
                             @error('warehouse_id')
@@ -124,12 +124,16 @@
                 @foreach($materials as $material)
                 @php
                     $stocks = $material->warehouseStocks->keyBy('warehouse_id')->map(function($s) {
-                        return ['stock' => $s->stock, 'location' => $s->location];
+                        return [
+                            'stock' => $s->stock,
+                            'location' => $s->location,
+                            'cost_price' => $s->cost_price,
+                            'selling_price' => $s->selling_price
+                        ];
                     });
                 @endphp
                 <option value="{{ $material->id }}" 
                         data-unit="{{ $material->unit->name ?? '' }}"
-                        data-selling-price="{{ $material->selling_price ?? 0 }}"
                         data-stocks="{{ json_encode($stocks) }}">
                     {{ $material->name }}
                 </option>
@@ -161,6 +165,8 @@
         const listBody = document.getElementById('materialList');
         const template = document.getElementById('materialRowTemplate').innerHTML;
         const form = document.getElementById('exitForm');
+        const warehouseSelect = document.getElementById('warehouse_id');
+        const projectSelect = document.getElementById('project_id');
 
         // Add first row automatically
         addRow();
@@ -185,38 +191,36 @@
                 const row = e.target.closest('tr');
                 const selectedOption = e.target.options[e.target.selectedIndex];
                 const unitCell = row.querySelector('.unit-cell');
-                const locationInput = row.querySelector('input[name*="[location]"]');
-                const priceInput = row.querySelector('.price-input');
                 
                 const unitName = selectedOption.getAttribute('data-unit');
-                const defaultPrice = selectedOption.getAttribute('data-selling-price');
                 unitCell.textContent = unitName ? unitName : '-';
-                if (priceInput && defaultPrice) {
-                    priceInput.value = defaultPrice;
-                }
 
-                updateRowLocation(row);
+                updateRowData(row);
             }
         });
 
-        function updateRowLocation(row) {
+        function updateRowData(row) {
             const materialSelect = row.querySelector('.material-select');
+            if (!materialSelect) return;
             const selectedOption = materialSelect.options[materialSelect.selectedIndex];
             const locationInput = row.querySelector('input[name*="[location]"]');
-            const warehouseId = document.getElementById('warehouse_id').value;
+            const priceInput = row.querySelector('.price-input');
+            const warehouseId = warehouseSelect.value;
 
             if (selectedOption && selectedOption.value && warehouseId) {
                 const stocks = JSON.parse(selectedOption.getAttribute('data-stocks') || '{}');
                 if (stocks[warehouseId]) {
-                    locationInput.value = stocks[warehouseId].location || '';
+                    if (locationInput) locationInput.value = stocks[warehouseId].location || '';
+                    if (priceInput) priceInput.value = stocks[warehouseId].selling_price || 0;
                 } else {
-                    locationInput.value = '';
+                    if (locationInput) locationInput.value = '';
+                    if (priceInput) priceInput.value = 0;
                 }
+            } else {
+                if (locationInput) locationInput.value = '';
+                if (priceInput) priceInput.value = 0;
             }
         }
-
-        const warehouseSelect = document.getElementById('warehouse_id');
-        const projectSelect = document.getElementById('project_id');
 
         form.addEventListener('submit', function(e) {
             if (listBody.querySelectorAll('tr').length === 0) {
@@ -249,14 +253,14 @@
         }
 
         warehouseSelect.addEventListener('change', function() {
-            filterCustomers();
+            filterProjects();
             listBody.querySelectorAll('tr').forEach(row => {
-                updateRowLocation(row);
+                updateRowData(row);
             });
         });
 
         if (warehouseSelect.value) {
-            filterCustomers();
+            filterProjects();
         }
     });
 </script>

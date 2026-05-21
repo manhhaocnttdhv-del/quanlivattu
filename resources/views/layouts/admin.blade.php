@@ -146,14 +146,16 @@
               </li>
               
               <li class="nav-header">QUẢN LÝ</li>
-              @if(auth()->check() && auth()->user()->hasRole(['Admin tổng', 'Admin kho']))
+              @can('Xem danh sách kho')
               <li class="nav-item">
                 <a href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-house-door"></i>
                   <p>Kho hàng</p>
                 </a>
               </li>
-              @endif
+              @endcan
+              
+              @can('Xem danh sách vật tư')
               <li class="nav-item {{ request()->routeIs('materials.*') || request()->routeIs('units.*') || request()->routeIs('categories.*') ? 'menu-open' : '' }}">
                 <a href="#" class="nav-link {{ request()->routeIs('materials.*') || request()->routeIs('units.*') || request()->routeIs('categories.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-box-seam"></i>
@@ -164,10 +166,17 @@
                 </a>
                 <ul class="nav nav-treeview">
                     <li class="nav-item">
+                        @if(auth()->check() && auth()->user()->isAdminTong())
                         <a href="{{ route('materials.index') }}" class="nav-link {{ request()->routeIs('materials.*') ? 'active' : '' }}">
                             <i class="nav-icon bi bi-circle"></i>
                             <p>Danh sách Vật tư</p>
                         </a>
+                        @elseif(auth()->check())
+                        <a href="{{ route('materials.index') }}?kho={{ auth()->user()->warehouse_id }}" class="nav-link {{ request()->routeIs('materials.*') ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-circle"></i>
+                            <p>Danh sách Vật tư</p>
+                        </a>
+                        @endif
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.*') ? 'active' : '' }}">
@@ -183,6 +192,7 @@
                     </li>
                 </ul>
               </li>
+              
               <li class="nav-item {{ request()->routeIs('suppliers.*') || request()->routeIs('projects.*') ? 'menu-open' : '' }}">
                   <a href="#" class="nav-link {{ request()->routeIs('suppliers.*') || request()->routeIs('projects.*') ? 'active' : '' }}">
                       <i class="nav-icon bi bi-people"></i>
@@ -206,42 +216,52 @@
                       </li>
                   </ul>
               </li>
-              @if(auth()->check() && auth()->user()->isAdminTong())
+              @endcan
+              
+              @can('Xem danh sách người dùng')
               <li class="nav-item">
                 <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-person-badge"></i>
                   <p>Người dùng</p>
                 </a>
               </li>
+              @endcan
+              @can('Phân quyền người dùng')
               <li class="nav-item">
                 <a href="{{ route('permissions.index') }}" class="nav-link {{ request()->routeIs('permissions.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-shield-lock"></i>
                   <p>Phân quyền</p>
                 </a>
               </li>
-              @endif
+              @endcan
 
               <li class="nav-header">NGHIỆP VỤ</li>
+              @can('view-inventory-entries')
               <li class="nav-item">
                 <a href="{{ route('inventory-entries.index') }}" class="nav-link {{ request()->routeIs('inventory-entries.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-cart-plus"></i>
                   <p>Nhập kho</p>
                 </a>
               </li>
+              @endcan
+              @can('view-inventory-exits')
               <li class="nav-item">
                 <a href="{{ route('inventory-exits.index') }}" class="nav-link {{ request()->routeIs('inventory-exits.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-cart-dash"></i>
                   <p>Xuất kho</p>
                 </a>
               </li>
+              @endcan
+              @can('view-inventory-transfers')
               <li class="nav-item">
                 <a href="{{ route('inventory-transfers.index') }}" class="nav-link {{ request()->routeIs('inventory-transfers.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-arrow-left-right"></i>
                   <p>Chuyển kho</p>
                 </a>
               </li>
+              @endcan
 
-              @if(auth()->check() && (auth()->user()->role === 'Admin tổng' || auth()->user()->role === 'Admin kho'))
+              @can('view-inventory-checks')
               <li class="nav-header">KIỂM KÊ</li>
               <li class="nav-item">
                 <a href="{{ route('inventory-checks.index') }}" class="nav-link {{ request()->routeIs('inventory-checks.*') ? 'active' : '' }}">
@@ -249,8 +269,9 @@
                   <p>Kiểm kê kho</p>
                 </a>
               </li>
-              @endif
+              @endcan
 
+              @can('view-reports')
               <li class="nav-header">BÁO CÁO</li>
               <li class="nav-item">
                 <a href="{{ route('reports.inventory') }}" class="nav-link {{ request()->routeIs('reports.inventory') ? 'active' : '' }}">
@@ -258,6 +279,7 @@
                   <p>Báo cáo Tồn kho</p>
                 </a>
               </li>
+              @endcan
 
               <li class="nav-item">
                 <hr class="mx-2 my-1 text-white-50">

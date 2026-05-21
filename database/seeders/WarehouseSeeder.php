@@ -291,8 +291,6 @@ class WarehouseSeeder extends Seeder
                     'unit_id'     => $vt['unit_id'],
                     'category_id' => $vt['category_id'],
                     'description' => $vt['desc'],
-                    'cost_price'  => $vt['cost_price'],
-                    'selling_price' => round($vt['cost_price'] * 1.1),
                     'min_stock'   => $vt['min_stock'],
                     'max_stock'   => $vt['max_stock'],
                 ]
@@ -303,35 +301,47 @@ class WarehouseSeeder extends Seeder
 
         // =============================================
         // 10. TỒN KHO BAN ĐẦU
-        //     [$material_id, $stock, $location, $average_cost]
+        //     [$material_id, $stock, $location, $average_cost, $cost_price, $selling_price]
         // =============================================
         $tonKhoHN = [
-            [$createdMaterials[0]->id, 1500, 'Khu A - Kệ 01', 2500],      // Bulong M10
-            [$createdMaterials[1]->id, 3200, 'Khu A - Kệ 02', 800],       // Ốc vít M6
-            [$createdMaterials[2]->id, 25,   'Khu B - Sân ngoài', 18500000], // Tấm thép
-            [$createdMaterials[3]->id, 8000, 'Khu A - Kệ 04', 35000],     // Dây điện
-            [$createdMaterials[5]->id, 45,   'Khu C - Kệ 01', 1850000],   // Sơn chống rỉ
-            [$createdMaterials[7]->id, 120,  'Khu A - Kệ 06', 185000],    // Bi trụ
+            [$createdMaterials[0]->id, 1500, 'Khu A - Kệ 01', 2500, 2500, round(2500 * 1.1)],      // Bulong M10
+            [$createdMaterials[1]->id, 3200, 'Khu A - Kệ 02', 800, 800, round(800 * 1.1)],       // Ốc vít M6
+            [$createdMaterials[2]->id, 25,   'Khu B - Sân ngoài', 18500000, 18500000, round(18500000 * 1.1)], // Tấm thép
+            [$createdMaterials[3]->id, 8000, 'Khu A - Kệ 04', 35000, 35000, round(35000 * 1.1)],     // Dây điện
+            [$createdMaterials[5]->id, 45,   'Khu C - Kệ 01', 1850000, 1850000, round(1850000 * 1.1)],   // Sơn chống rỉ
+            [$createdMaterials[7]->id, 120,  'Khu A - Kệ 06', 185000, 185000, round(185000 * 1.1)],    // Bi trụ
         ];
 
-        foreach ($tonKhoHN as [$matId, $stock, $loc, $cost]) {
+        foreach ($tonKhoHN as [$matId, $stock, $loc, $cost, $costPrice, $sellingPrice]) {
             MaterialWarehouse::updateOrCreate(
                 ['warehouse_id' => $khoHN->id, 'material_id' => $matId],
-                ['stock' => $stock, 'location' => $loc, 'average_cost' => $cost]
+                [
+                    'stock' => $stock,
+                    'location' => $loc,
+                    'average_cost' => $cost,
+                    'cost_price' => $costPrice,
+                    'selling_price' => $sellingPrice
+                ]
             );
         }
 
         $tonKhoTH = [
-            [$createdMaterials[0]->id, 800,  'Khu A - Kệ 01', 2500],      // Bulong M10
-            [$createdMaterials[2]->id, 15,   'Khu B - Sân ngoài', 18500000], // Tấm thép
-            [$createdMaterials[4]->id, 2000, 'Khu A - Kệ 03', 28000],     // Ống nhựa
-            [$createdMaterials[6]->id, 30,   'Khu B - Kệ 01', 3200000],   // Dây thép cuộn
+            [$createdMaterials[0]->id, 800,  'Khu A - Kệ 01', 2500, 2500, round(2500 * 1.1)],      // Bulong M10
+            [$createdMaterials[2]->id, 15,   'Khu B - Sân ngoài', 18500000, 18500000, round(18500000 * 1.1)], // Tấm thép
+            [$createdMaterials[4]->id, 2000, 'Khu A - Kệ 03', 28000, 28000, round(28000 * 1.1)],     // Ống nhựa
+            [$createdMaterials[6]->id, 30,   'Khu B - Kệ 01', 3200000, 3200000, round(3200000 * 1.1)],   // Dây thép cuộn
         ];
 
-        foreach ($tonKhoTH as [$matId, $stock, $loc, $cost]) {
+        foreach ($tonKhoTH as [$matId, $stock, $loc, $cost, $costPrice, $sellingPrice]) {
             MaterialWarehouse::updateOrCreate(
                 ['warehouse_id' => $khoTH->id, 'material_id' => $matId],
-                ['stock' => $stock, 'location' => $loc, 'average_cost' => $cost]
+                [
+                    'stock' => $stock,
+                    'location' => $loc,
+                    'average_cost' => $cost,
+                    'cost_price' => $costPrice,
+                    'selling_price' => $sellingPrice
+                ]
             );
         }
 

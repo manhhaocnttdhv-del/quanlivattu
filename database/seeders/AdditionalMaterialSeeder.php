@@ -75,21 +75,30 @@ class AdditionalMaterialSeeder extends Seeder
             ['name' => 'Đinh thép 5 phân',         'unit' => 'Kg',  'cat' => $catBulong, 'desc' => 'Đinh đóng gỗ',                   'cost_price' => 22000,    'min_stock' => 50],
         ];
 
+        $warehouseId = \App\Models\Warehouse::first()->id ?? null;
         $count = 0;
         foreach ($materials as $item) {
             $unit = $units->firstWhere('name', $item['unit']) ?? $units->first();
 
-            Material::updateOrCreate(
+            $material = Material::updateOrCreate(
                 ['name' => $item['name']],
                 [
                     'unit_id'     => $unit->id,
                     'category_id' => $item['cat']?->id,
                     'description' => $item['desc'],
-                    'cost_price'  => $item['cost_price'],
-                    'selling_price' => round($item['cost_price'] * 1.15),
                     'min_stock'   => $item['min_stock'],
                 ]
             );
+
+            if ($warehouseId) {
+                \App\Models\MaterialWarehouse::updateOrCreate(
+                    ['warehouse_id' => $warehouseId, 'material_id' => $material->id],
+                    [
+                        'cost_price' => $item['cost_price'],
+                        'selling_price' => round($item['cost_price'] * 1.15)
+                    ]
+                );
+            }
             $count++;
         }
 

@@ -75,7 +75,10 @@ class MockDataSeeder extends Seeder
                 ]);
 
                 $qty   = rand(100, 500);
-                $price = $mat->cost_price > 0 ? $mat->cost_price : rand(10000, 50000);
+                $warehouseStock = \App\Models\MaterialWarehouse::where('warehouse_id', $khoHN->id)
+                    ->where('material_id', $mat->id)
+                    ->first();
+                $price = $warehouseStock && $warehouseStock->cost_price > 0 ? $warehouseStock->cost_price : rand(10000, 50000);
 
                 $entry->details()->create([
                     'material_id' => $mat->id,
@@ -148,7 +151,10 @@ class MockDataSeeder extends Seeder
                 ]);
 
                 $qty   = rand(10, 50);
-                $price = $matForExit->selling_price > 0 ? $matForExit->selling_price : 0;
+                $warehouseStock = \App\Models\MaterialWarehouse::where('warehouse_id', $khoHN->id)
+                    ->where('material_id', $matForExit->id)
+                    ->first();
+                $price = $warehouseStock && $warehouseStock->selling_price > 0 ? $warehouseStock->selling_price : 0;
 
                 $exit->details()->create([
                     'material_id' => $matForExit->id,

@@ -32,6 +32,7 @@ class ImportScrapedDataCommand extends Command
         // Get or create a default unit
         $unit = Unit::firstOrCreate(['name' => 'Cái'], ['description' => 'Mặc định (Cái)']);
 
+        $warehouseId = \App\Models\Warehouse::first()->id ?? null;
         $countMaterials = 0;
         $countCategories = 0;
 
@@ -64,22 +65,24 @@ class ImportScrapedDataCommand extends Command
                     [
                         'category_id' => $category->id,
                         'unit_id' => $unit->id,
-                        'selling_price' => $sellingPrice,
-                        'cost_price' => $costPrice,
                         'description' => 'Vật tư từ sieuthivattu.vn',
                         'min_stock' => 0
                     ]
                 );
 
-                // If exists but we want to update the price (optional)
-                if (!$material->wasRecentlyCreated) {
-                    $material->update([
-                        'selling_price' => $sellingPrice,
-                        'cost_price' => $costPrice,
-                        'category_id' => $category->id
-                    ]);
-                } else {
+                if ($material->wasRecentlyCreated) {
                     $countMaterials++;
+                }
+
+                // Update prices in the default warehouse
+                if ($warehouseId) {
+                    \App\Models\MaterialWarehouse::updateOrCreate(
+                        ['warehouse_id' => $warehouseId, 'material_id' => $material->id],
+                        [
+                            'cost_price' => $costPrice,
+                            'selling_price' => $sellingPrice,
+                        ]
+                    );
                 }
             }
         }

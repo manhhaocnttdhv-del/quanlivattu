@@ -53,24 +53,7 @@
                         @enderror
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="cost_price" class="form-label">Giá nhập / Giá vốn (VNĐ)</label>
-                            <input type="number" class="form-control @error('cost_price') is-invalid @enderror" id="cost_price" name="cost_price" value="{{ old('cost_price', $material->cost_price) }}" min="0" step="1">
-                            <small class="text-muted">Đơn giá mặc định khi nhập kho</small>
-                            @error('cost_price')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="selling_price" class="form-label">Giá bán / Giá xuất (VNĐ)</label>
-                            <input type="number" class="form-control @error('selling_price') is-invalid @enderror" id="selling_price" name="selling_price" value="{{ old('selling_price', $material->selling_price) }}" min="0" step="1">
-                            <small class="text-muted">Đơn giá mặc định khi xuất kho</small>
-                            @error('selling_price')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
+
 
                     <div class="mb-3">
                         <label for="description" class="form-label">Mô tả</label>

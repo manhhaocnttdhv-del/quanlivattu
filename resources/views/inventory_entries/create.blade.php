@@ -43,7 +43,7 @@
                             <select class="form-select @error('warehouse_id') is-invalid @enderror" id="warehouse_id" name="warehouse_id" required>
                                 <option value="">-- Chọn Kho hàng --</option>
                                 @foreach($warehouses as $wh)
-                                <option value="{{ $wh->id }}" {{ old('warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+                                <option value="{{ $wh->id }}" {{ old('warehouse_id', auth()->user()->warehouse_id) == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
                                 @endforeach
                             </select>
                             @error('warehouse_id')
@@ -122,7 +122,16 @@
             <select class="form-select material-select" name="materials[__INDEX__][id]" required>
                 <option value="">-- Chọn Vật tư --</option>
                 @foreach($materials as $material)
-                <option value="{{ $material->id }}" data-unit="{{ $material->unit->name ?? '' }}" data-cost-price="{{ $material->cost_price ?? 0 }}">{{ $material->name }}</option>
+                @php
+                    $stocks = $material->warehouseStocks->keyBy('warehouse_id')->map(function($s) {
+                        return ['stock' => $s->stock, 'location' => $s->location, 'cost_price' => $s->cost_price, 'selling_price' => $s->selling_price];
+                    });
+                @endphp
+                <option value="{{ $material->id }}" 
+                        data-unit="{{ $material->unit->name ?? '' }}" 
+                        data-stocks="{{ json_encode($stocks) }}">
+                    {{ $material->name }}
+                </option>
                 @endforeach
             </select>
         </td>
@@ -151,6 +160,8 @@
         const listBody = document.getElementById('materialList');
         const template = document.getElementById('materialRowTemplate').innerHTML;
         const form = document.getElementById('entryForm');
+        const warehouseSelect = document.getElementById('warehouse_id');
+        const supplierSelect = document.getElementById('supplier_id');
 
         // Add first row automatically
         addRow();
@@ -176,11 +187,21 @@
                 const row = e.target.closest('tr');
                 const unitCell = row.querySelector('.unit-cell');
                 const priceInput = row.querySelector('.price-input');
+                const locationInput = row.querySelector('input[name*="[location]"]');
+                const warehouseId = warehouseSelect.value;
+                
                 const unitName = selectedOption.getAttribute('data-unit');
-                const defaultPrice = selectedOption.getAttribute('data-cost-price');
                 unitCell.textContent = unitName ? unitName : '-';
-                if (priceInput && defaultPrice) {
-                    priceInput.value = defaultPrice;
+                
+                if (selectedOption && selectedOption.value && warehouseId) {
+                    const stocks = JSON.parse(selectedOption.getAttribute('data-stocks') || '{}');
+                    if (stocks[warehouseId]) {
+                        if (priceInput) priceInput.value = stocks[warehouseId].cost_price || 0;
+                        if (locationInput) locationInput.value = stocks[warehouseId].location || '';
+                    } else {
+                        if (priceInput) priceInput.value = 0;
+                        if (locationInput) locationInput.value = '';
+                    }
                 }
             }
         });
@@ -197,10 +218,6 @@
             listBody.insertAdjacentHTML('beforeend', newRowHtml);
             materialIndex++;
         }
-
-        // Supplier filtering based on warehouse
-        const warehouseSelect = document.getElementById('warehouse_id');
-        const supplierSelect = document.getElementById('supplier_id');
 
         function filterSuppliers() {
             const selectedWarehouse = warehouseSelect.value;
@@ -224,7 +241,34 @@
             });
         }
 
-        warehouseSelect.addEventListener('change', filterSuppliers);
+        function updateAllRowsData() {
+            listBody.querySelectorAll('tr').forEach(row => {
+                const materialSelect = row.querySelector('.material-select');
+                if (materialSelect && materialSelect.value) {
+                    const selectedOption = materialSelect.options[materialSelect.selectedIndex];
+                    const priceInput = row.querySelector('.price-input');
+                    const locationInput = row.querySelector('input[name*="[location]"]');
+                    const warehouseId = warehouseSelect.value;
+                    
+                    if (selectedOption && warehouseId) {
+                        const stocks = JSON.parse(selectedOption.getAttribute('data-stocks') || '{}');
+                        if (stocks[warehouseId]) {
+                            if (priceInput) priceInput.value = stocks[warehouseId].cost_price || 0;
+                            if (locationInput) locationInput.value = stocks[warehouseId].location || '';
+                        } else {
+                            if (priceInput) priceInput.value = 0;
+                            if (locationInput) locationInput.value = '';
+                        }
+                    }
+                }
+            });
+        }
+
+        warehouseSelect.addEventListener('change', function() {
+            filterSuppliers();
+            updateAllRowsData();
+        });
+        
         // Run once on load
         if (warehouseSelect.value) {
             filterSuppliers();

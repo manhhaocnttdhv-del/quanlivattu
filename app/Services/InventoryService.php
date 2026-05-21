@@ -52,21 +52,22 @@ class InventoryService
 
             // === Cảnh báo tồn kho (Inventory Alerts) ===
             $material = \App\Models\Material::find($materialId);
-            if ($material && clone $material) { // Avoid any lazy loading issues
+            if ($material) {
                 $totalStock = MaterialWarehouse::where('material_id', $materialId)->sum('stock');
+                $minStock = $material->min_stock ?? 0;
                 
-                if ($totalStock < $material->min_stock_level) {
+                if ($totalStock < $minStock) {
                     // Tồn kho dưới mức tối thiểu -> Tạo/Cập nhật cảnh báo chưa xử lý
                     \Illuminate\Support\Facades\DB::table('inventory_alerts')->updateOrInsert(
                         ['material_id' => $materialId, 'is_resolved' => false],
                         [
                             'current_stock' => $totalStock,
-                            'min_stock_level' => $material->min_stock_level,
+                            'min_stock_level' => $minStock,
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]
                     );
-                } elseif ($totalStock >= $material->min_stock_level) {
+                } elseif ($totalStock >= $minStock) {
                     // Tồn kho đã an toàn -> Đánh dấu các cảnh báo cũ là đã xử lý
                     \Illuminate\Support\Facades\DB::table('inventory_alerts')
                         ->where('material_id', $materialId)

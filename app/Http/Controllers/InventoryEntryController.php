@@ -60,7 +60,7 @@ class InventoryEntryController extends Controller
                 $q->where('warehouse_id', Auth::user()->warehouse_id)
                   ->orWhereNull('warehouse_id');
             })->get();
-        $materials = Material::with('unit')->get();
+        $materials = Material::with(['unit', 'warehouseStocks'])->get();
 
         return view('inventory_entries.create', compact('warehouses', 'suppliers', 'materials'));
     }

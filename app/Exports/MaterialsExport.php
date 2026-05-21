@@ -14,7 +14,13 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping
     */
     public function collection()
     {
-        return Material::with('unit')->get();
+        $warehouseId = auth()->user()->warehouse_id ?? \App\Models\Warehouse::first()->id ?? null;
+        
+        return Material::with(['unit', 'warehouseStocks' => function($q) use ($warehouseId) {
+            if ($warehouseId) {
+                $q->where('warehouse_id', $warehouseId);
+            }
+        }])->get();
     }
 
     public function headings(): array
@@ -36,15 +42,21 @@ class MaterialsExport implements FromCollection, WithHeadings, WithMapping
 
     public function map($material): array
     {
+        $stockRecord = $material->warehouseStocks->first();
+        $costPrice = $stockRecord ? $stockRecord->cost_price : 0;
+        $sellingPrice = $stockRecord ? $stockRecord->selling_price : 0;
+        $profit = $sellingPrice - $costPrice;
+        $profitMargin = $costPrice > 0 ? round(($profit / $costPrice) * 100, 1) : 0;
+
         return [
             $material->id,
             $material->name,
             $material->description,
             $material->unit_id,
-            $material->cost_price,
-            $material->selling_price,
-            $material->profit,
-            $material->profit_margin . '%',
+            $costPrice,
+            $sellingPrice,
+            $profit,
+            $profitMargin . '%',
             $material->min_stock,
             $material->max_stock,
             $material->created_at ? $material->created_at->format('d/m/Y H:i') : '',

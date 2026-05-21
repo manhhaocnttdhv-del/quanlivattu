@@ -28,8 +28,8 @@ class InventoryCheckController extends Controller
             $warehouses = $warehouses->where('id', Auth::user()->warehouse_id);
         }
 
-        // Selected warehouse for checking
-        $selectedWarehouseId = $request->get('warehouse_id');
+        // Selected warehouse for checking, default to user's warehouse or first available
+        $selectedWarehouseId = $request->get('warehouse_id') ?: Auth::user()->warehouse_id ?: ($warehouses->first()->id ?? null);
         $materials = [];
 
         if ($selectedWarehouseId) {

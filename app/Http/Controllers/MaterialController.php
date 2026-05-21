@@ -4,13 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\Material;
 use App\Models\Unit;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 
 class MaterialController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Material::with('unit', 'category');
+        $user = auth()->user();
+        
+        // 1. Determine selected warehouse
+        if ($user && $user->role === 'Admin kho') {
+            $selectedWarehouseId = $user->warehouse_id;
+        } else {
+            $selectedWarehouseId = $request->input('kho') ?: (Warehouse::first()->id ?? null);
+        }
+
+        // 2. Base query with eager loading for unit, category, and ONLY the selected warehouse's stock
+        $query = Material::with(['unit', 'category', 'warehouseStocks' => function ($q) use ($selectedWarehouseId) {
+            $q->where('warehouse_id', $selectedWarehouseId);
+        }]);
 
         // Filter by name (search)
         if ($request->filled('search')) {
@@ -32,15 +45,21 @@ class MaterialController extends Controller
             $query->whereIn('category_id', $categoryIds);
         }
 
-        // Filter by stock status
+        // Filter by stock status (using the selected warehouse's stock)
         if ($request->filled('stock_status')) {
             if ($request->stock_status === 'below_min') {
-                $query->whereHas('warehouseStocks', function ($q) {
-                    $q->whereRaw('stock < (SELECT min_stock FROM materials WHERE materials.id = material_warehouses.material_id)');
+                $query->where(function($q) use ($selectedWarehouseId) {
+                    $q->whereHas('warehouseStocks', function ($sub) use ($selectedWarehouseId) {
+                        $sub->where('warehouse_id', $selectedWarehouseId)
+                            ->whereRaw('stock < (SELECT min_stock FROM materials WHERE materials.id = material_warehouses.material_id)');
+                    })->orWhereDoesntHave('warehouseStocks', function($sub) use ($selectedWarehouseId) {
+                        $sub->where('warehouse_id', $selectedWarehouseId);
+                    })->where('min_stock', '>', 0);
                 });
             } elseif ($request->stock_status === 'above_max') {
-                $query->whereHas('warehouseStocks', function ($q) {
-                    $q->whereRaw('stock > (SELECT max_stock FROM materials WHERE materials.id = material_warehouses.material_id AND materials.max_stock > 0)');
+                $query->whereHas('warehouseStocks', function ($sub) use ($selectedWarehouseId) {
+                    $sub->where('warehouse_id', $selectedWarehouseId)
+                        ->whereRaw('stock > (SELECT max_stock FROM materials WHERE materials.id = material_warehouses.material_id AND materials.max_stock > 0)');
                 });
             }
         }
@@ -49,8 +68,72 @@ class MaterialController extends Controller
 
         $units = Unit::all();
         $categories = \App\Models\Category::with('children')->whereNull('parent_id')->get();
+        $warehouses = Warehouse::where('status', 'active')->get();
 
-        return view('materials.index', compact('materials', 'units', 'categories'));
+        return view('materials.index', compact('materials', 'units', 'categories', 'warehouses', 'selectedWarehouseId'));
+    }
+
+    public function updateStock(Request $request, \App\Services\InventoryService $inventoryService)
+    {
+        $validated = $request->validate([
+            'material_id' => 'required|exists:materials,id',
+            'warehouse_id' => 'required|exists:warehouses,id',
+            'stock' => 'required|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
+            'selling_price' => 'nullable|numeric|min:0',
+            'location' => 'nullable|string|max:100',
+        ]);
+
+        try {
+            $warehouseId = $validated['warehouse_id'];
+            $materialId = $validated['material_id'];
+            $newStock = $validated['stock'];
+            $costPrice = $validated['cost_price'] ?: 0;
+            $sellingPrice = $validated['selling_price'] ?: 0;
+            $location = $validated['location'];
+
+            $currentRecord = \App\Models\MaterialWarehouse::where('warehouse_id', $warehouseId)
+                ->where('material_id', $materialId)
+                ->first();
+            
+            $currentStock = $currentRecord ? $currentRecord->stock : 0;
+            $diff = $newStock - $currentStock;
+
+            // Make sure the record exists or is created
+            $record = \App\Models\MaterialWarehouse::firstOrCreate(
+                ['warehouse_id' => $warehouseId, 'material_id' => $materialId],
+                ['stock' => 0, 'average_cost' => 0]
+            );
+
+            // Update cost_price and selling_price
+            $record->cost_price = $costPrice;
+            $record->selling_price = $sellingPrice;
+            if ($location) {
+                $record->location = $location;
+            }
+
+            if ($diff > 0) {
+                $inventoryService->updateStock($warehouseId, $materialId, $diff, 'add', $costPrice, $location);
+            } elseif ($diff < 0) {
+                $inventoryService->updateStock($warehouseId, $materialId, abs($diff), 'subtract', null, $location);
+            } else {
+                $record->save();
+            }
+
+            // Ensure the specific prices are saved to the database record
+            $finalRecord = \App\Models\MaterialWarehouse::where('warehouse_id', $warehouseId)
+                ->where('material_id', $materialId)
+                ->first();
+            if ($finalRecord) {
+                $finalRecord->cost_price = $costPrice;
+                $finalRecord->selling_price = $sellingPrice;
+                $finalRecord->save();
+            }
+
+            return redirect()->back()->with('success', 'Cập nhật tồn kho và giá thành công!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Lỗi khi cập nhật: ' . $e->getMessage());
+        }
     }
 
     public function create()
@@ -67,8 +150,6 @@ class MaterialController extends Controller
             'unit_id' => 'required|exists:units,id',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
-            'cost_price' => 'nullable|numeric|min:0',
-            'selling_price' => 'nullable|numeric|min:0',
             'min_stock' => 'nullable|numeric|min:0',
             'max_stock' => 'nullable|numeric|min:0',
         ]);
@@ -96,8 +177,6 @@ class MaterialController extends Controller
             'unit_id' => 'required|exists:units,id',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
-            'cost_price' => 'nullable|numeric|min:0',
-            'selling_price' => 'nullable|numeric|min:0',
             'min_stock' => 'nullable|numeric|min:0',
             'max_stock' => 'nullable|numeric|min:0',
         ]);

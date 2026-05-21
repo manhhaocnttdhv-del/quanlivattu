@@ -121,10 +121,15 @@ class InventoryExitController extends Controller
                     throw new \Exception("Vật tư ID {$item['id']} xuất vượt định mức! (Đã xuất+Chờ xuất: {$alreadyExited}, Yêu cầu thêm: {$item['quantity']}, Định mức: {$estimatedQty})");
                 }
 
+                $warehouseStock = \App\Models\MaterialWarehouse::where('warehouse_id', $validated['warehouse_id'])
+                    ->where('material_id', $item['id'])
+                    ->first();
+                $defaultSellingPrice = $warehouseStock ? $warehouseStock->selling_price : 0;
+
                 $exit->details()->create([
                     'material_id' => $item['id'],
                     'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'] ?? Material::find($item['id'])->selling_price ?? 0,
+                    'unit_price' => $item['unit_price'] ?? $defaultSellingPrice,
                     'location' => $item['location'] ?? null,
                 ]);
             }
