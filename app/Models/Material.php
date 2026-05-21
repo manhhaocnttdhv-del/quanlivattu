@@ -9,11 +9,16 @@ class Material extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'unit_id', 'description', 'min_stock', 'max_stock'];
+    protected $fillable = ['name', 'unit_id', 'category_id', 'description', 'min_stock', 'max_stock'];
 
     public function unit()
     {
         return $this->belongsTo(Unit::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(\App\Models\Category::class);
     }
 
     public function warehouses()

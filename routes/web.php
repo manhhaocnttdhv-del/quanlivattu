@@ -25,6 +25,7 @@ use App\Http\Controllers\InventoryExitController;
 use App\Http\Controllers\InventoryTransferController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\InventoryAlertController;
+use App\Http\Controllers\CategoryController;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -32,9 +33,11 @@ Route::middleware(['auth'])->group(function () {
     // Defined BEFORE base routes to ensure 'create' is not shadowed by '{material}'
     Route::middleware(['role:Admin tổng,Admin kho'])->group(function () {
         Route::get('materials-export', [MaterialController::class, 'export'])->name('materials.export');
+        Route::get('materials-template', [MaterialController::class, 'downloadTemplate'])->name('materials.template');
         Route::post('materials-import', [MaterialController::class, 'import'])->name('materials.import');
         Route::resource('materials', MaterialController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
         Route::resource('units', UnitController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+        Route::resource('categories', CategoryController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
         Route::resource('suppliers', SupplierController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
         Route::post('projects/{project}/materials', [ProjectController::class, 'updateMaterials'])->name('projects.materials.update');
         Route::resource('projects', ProjectController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
@@ -43,6 +46,7 @@ Route::middleware(['auth'])->group(function () {
     // Base routes accessible to all authenticated users (Read)
     Route::resource('materials', MaterialController::class)->only(['index', 'show']);
     Route::resource('units', UnitController::class)->only(['index', 'show']);
+    Route::resource('categories', CategoryController::class)->only(['index']);
     Route::resource('suppliers', SupplierController::class)->only(['index', 'show']);
     Route::resource('projects', ProjectController::class)->only(['index', 'show']);
     

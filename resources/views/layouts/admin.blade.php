@@ -154,8 +154,8 @@
                 </a>
               </li>
               @endif
-              <li class="nav-item {{ request()->routeIs('materials.*') || request()->routeIs('units.*') ? 'menu-open' : '' }}">
-                <a href="#" class="nav-link {{ request()->routeIs('materials.*') || request()->routeIs('units.*') ? 'active' : '' }}">
+              <li class="nav-item {{ request()->routeIs('materials.*') || request()->routeIs('units.*') || request()->routeIs('categories.*') ? 'menu-open' : '' }}">
+                <a href="#" class="nav-link {{ request()->routeIs('materials.*') || request()->routeIs('units.*') || request()->routeIs('categories.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-box-seam"></i>
                   <p>
                     Vật tư
@@ -167,6 +167,12 @@
                         <a href="{{ route('materials.index') }}" class="nav-link {{ request()->routeIs('materials.*') ? 'active' : '' }}">
                             <i class="nav-icon bi bi-circle"></i>
                             <p>Danh sách Vật tư</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.*') ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-circle"></i>
+                            <p>Nhóm vật tư</p>
                         </a>
                     </li>
                     <li class="nav-item">

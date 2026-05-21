@@ -24,9 +24,11 @@
             <div class="card-header">
                 <h3 class="card-title">Danh sách</h3>
                 <div class="card-tools">
+                    @if(auth()->check() && auth()->user()->isAdminTong())
                     <a href="{{ route('warehouses.create') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-lg"></i> Thêm mới
                     </a>
+                    @endif
                 </div>
             </div>
             <!-- /.card-header -->
@@ -39,7 +41,9 @@
                             <th>Địa chỉ</th>
                             <th>Quản lý kho</th>
                             <th>Trạng thái</th>
+                            @if(auth()->check() && auth()->user()->isAdminTong())
                             <th style="width: 150px">Thao tác</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -56,6 +60,7 @@
                                     <span class="badge text-bg-secondary">Ngừng hoạt động</span>
                                 @endif
                             </td>
+                            @if(auth()->check() && auth()->user()->isAdminTong())
                             <td>
                                 <a href="{{ route('warehouses.edit', $warehouse) }}" class="btn btn-sm btn-warning">Sửa</a>
                                 <form action="{{ route('warehouses.destroy', $warehouse) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
@@ -64,6 +69,7 @@
                                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                                 </form>
                             </td>
+                            @endif
                         </tr>
                         @empty
                         <tr>

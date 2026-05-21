@@ -12,14 +12,37 @@ use Illuminate\Support\Facades\DB;
 
 class InventoryExitController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $query = InventoryExit::with(['warehouse', 'project', 'user'])->latest();
+
         if (Auth::user()->role !== 'Admin tổng') {
             $query->where('warehouse_id', Auth::user()->warehouse_id);
         }
-        $exits = $query->paginate(10);
-        return view('inventory_exits.index', compact('exits'));
+
+        // Filters
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('warehouse_id') && Auth::user()->role === 'Admin tổng') {
+            $query->where('warehouse_id', $request->warehouse_id);
+        }
+        if ($request->filled('project_id')) {
+            $query->where('project_id', $request->project_id);
+        }
+
+        $exits = $query->paginate(10)->appends($request->query());
+
+        $warehouses = Auth::user()->role === 'Admin tổng' ? Warehouse::all() : collect();
+        $projects = Project::all();
+
+        return view('inventory_exits.index', compact('exits', 'warehouses', 'projects'));
     }
 
     public function create()

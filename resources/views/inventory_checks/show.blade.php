@@ -66,11 +66,13 @@
 
             <div class="card-footer text-end">
                 <a href="{{ route('inventory-checks.index') }}" class="btn btn-secondary">Quay lại danh sách</a>
-                @if($inventoryCheck->status === 'pending')
-                    <form action="{{ route('inventory-checks.approve', $inventoryCheck) }}" method="POST" class="d-inline ms-2" onsubmit="return confirm('Duyệt kết quả và TỰ ĐỘNG ĐIỀU CHỈNH KHO (sẽ sinh ra Phiếu nhập/xuất bù trừ)?');">
-                        @csrf
-                        <button type="submit" class="btn btn-success">Duyệt thay đổi (Điều chỉnh kho)</button>
-                    </form>
+                @if(auth()->check() && auth()->user()->hasRole(['Admin tổng', 'Admin kho']))
+                    @if($inventoryCheck->status === 'pending')
+                        <form action="{{ route('inventory-checks.approve', $inventoryCheck) }}" method="POST" class="d-inline ms-2" onsubmit="return confirm('Duyệt kết quả và TỰ ĐỘNG ĐIỀU CHỈNH KHO (sẽ sinh ra Phiếu nhập/xuất bù trừ)?');">
+                            @csrf
+                            <button type="submit" class="btn btn-success">Duyệt thay đổi (Điều chỉnh kho)</button>
+                        </form>
+                    @endif
                 @endif
             </div>
         </div>

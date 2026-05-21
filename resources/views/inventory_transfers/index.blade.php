@@ -62,20 +62,22 @@
                             </td>
                             <td class="d-flex gap-1">
                                 <a href="{{ route('inventory-transfers.show', $transfer) }}" class="btn btn-sm btn-info text-white">Xem</a>
-                                @if($transfer->status === 'pending')
-                                    <form action="{{ route('inventory-transfers.approve', $transfer) }}" method="POST" class="d-inline" onsubmit="return confirm('Duyệt phiếu này? Sẽ trừ kho nguồn và cộng kho đích.');">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
-                                    </form>
-                                    <form action="{{ route('inventory-transfers.cancel', $transfer) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu này?');">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
-                                    </form>
-                                @elseif($transfer->status === 'completed')
-                                    <form action="{{ route('inventory-transfers.cancel', $transfer) }}" method="POST" class="d-inline" onsubmit="return confirm('CẢNH BÁO: Hủy phiếu đã duyệt sẽ TRẢ LẠI số lượng cho kho nguồn và TRỪ ĐI ở kho đích. Chắc chắn?');">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
-                                    </form>
+                                @if(auth()->check() && auth()->user()->hasRole(['Admin tổng', 'Admin kho']))
+                                    @if($transfer->status === 'pending')
+                                        <form action="{{ route('inventory-transfers.approve', $transfer) }}" method="POST" class="d-inline" onsubmit="return confirm('Duyệt phiếu này? Sẽ trừ kho nguồn và cộng kho đích.');">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
+                                        </form>
+                                        <form action="{{ route('inventory-transfers.cancel', $transfer) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu này?');">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                                        </form>
+                                    @elseif($transfer->status === 'completed')
+                                        <form action="{{ route('inventory-transfers.cancel', $transfer) }}" method="POST" class="d-inline" onsubmit="return confirm('CẢNH BÁO: Hủy phiếu đã duyệt sẽ TRẢ LẠI số lượng cho kho nguồn và TRỪ ĐI ở kho đích. Chắc chắn?');">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                                        </form>
+                                    @endif
                                 @endif
                             </td>
                         </tr>

@@ -12,14 +12,37 @@ use Illuminate\Support\Facades\DB;
 
 class InventoryEntryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $query = InventoryEntry::with(['warehouse', 'supplier', 'user'])->latest();
+
         if (Auth::user()->role !== 'Admin tổng') {
             $query->where('warehouse_id', Auth::user()->warehouse_id);
         }
-        $entries = $query->paginate(10);
-        return view('inventory_entries.index', compact('entries'));
+
+        // Filters
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('warehouse_id') && Auth::user()->role === 'Admin tổng') {
+            $query->where('warehouse_id', $request->warehouse_id);
+        }
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', $request->supplier_id);
+        }
+
+        $entries = $query->paginate(10)->appends($request->query());
+
+        $warehouses = Auth::user()->role === 'Admin tổng' ? Warehouse::all() : collect();
+        $suppliers = Supplier::all();
+
+        return view('inventory_entries.index', compact('entries', 'warehouses', 'suppliers'));
     }
 
     public function create()

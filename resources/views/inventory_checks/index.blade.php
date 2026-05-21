@@ -60,15 +60,17 @@
                             </td>
                             <td class="d-flex gap-1">
                                 <a href="{{ route('inventory-checks.show', $check) }}" class="btn btn-sm btn-info text-white">Xem</a>
-                                @if($check->status === 'pending')
-                                    <form action="{{ route('inventory-checks.approve', $check) }}" method="POST" class="d-inline" onsubmit="return confirm('Duyệt kết quả và TỰ ĐỘNG ĐIỀU CHỈNH KHO (sẽ sinh ra Phiếu nhập/xuất bù trừ)?');">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
-                                    </form>
-                                    <form action="{{ route('inventory-checks.cancel', $check) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu này?');">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
-                                    </form>
+                                @if(auth()->check() && auth()->user()->hasRole(['Admin tổng', 'Admin kho']))
+                                    @if($check->status === 'pending')
+                                        <form action="{{ route('inventory-checks.approve', $check) }}" method="POST" class="d-inline" onsubmit="return confirm('Duyệt kết quả và TỰ ĐỘNG ĐIỀU CHỈNH KHO (sẽ sinh ra Phiếu nhập/xuất bù trừ)?');">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
+                                        </form>
+                                        <form action="{{ route('inventory-checks.cancel', $check) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu này?');">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                                        </form>
+                                    @endif
                                 @endif
                             </td>
                         </tr>
