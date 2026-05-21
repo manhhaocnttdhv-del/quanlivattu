@@ -9,7 +9,7 @@ class InventoryEntryDetail extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['inventory_entry_id', 'material_id', 'quantity', 'price', 'location'];
+    protected $fillable = ['inventory_entry_id', 'material_id', 'quantity', 'unit_price', 'location'];
 
     public function inventoryEntry()
     {

@@ -122,7 +122,7 @@
             <select class="form-select material-select" name="materials[__INDEX__][id]" required>
                 <option value="">-- Chọn Vật tư --</option>
                 @foreach($materials as $material)
-                <option value="{{ $material->id }}" data-unit="{{ $material->unit->name ?? '' }}">{{ $material->name }}</option>
+                <option value="{{ $material->id }}" data-unit="{{ $material->unit->name ?? '' }}" data-cost-price="{{ $material->cost_price ?? 0 }}">{{ $material->name }}</option>
                 @endforeach
             </select>
         </td>
@@ -131,7 +131,7 @@
             <input type="number" class="form-control text-end qty-input" name="materials[__INDEX__][quantity]" step="0.01" min="0.01" value="1" required>
         </td>
         <td>
-            <input type="number" class="form-control text-end price-input" name="materials[__INDEX__][price]" min="0" value="0">
+            <input type="number" class="form-control text-end price-input" name="materials[__INDEX__][unit_price]" min="0" value="0">
         </td>
         <td>
             <input type="text" class="form-control" name="materials[__INDEX__][location]" placeholder="Vị trí (vd: Kệ A1)">
@@ -173,9 +173,15 @@
         listBody.addEventListener('change', function(e) {
             if (e.target.classList.contains('material-select')) {
                 const selectedOption = e.target.options[e.target.selectedIndex];
-                const unitCell = e.target.closest('tr').querySelector('.unit-cell');
+                const row = e.target.closest('tr');
+                const unitCell = row.querySelector('.unit-cell');
+                const priceInput = row.querySelector('.price-input');
                 const unitName = selectedOption.getAttribute('data-unit');
+                const defaultPrice = selectedOption.getAttribute('data-cost-price');
                 unitCell.textContent = unitName ? unitName : '-';
+                if (priceInput && defaultPrice) {
+                    priceInput.value = defaultPrice;
+                }
             }
         });
 

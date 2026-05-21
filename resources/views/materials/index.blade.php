@@ -85,6 +85,9 @@
                             <th>Tên vật tư</th>
                             <th>Nhóm</th>
                             <th>Đơn vị tính</th>
+                            <th class="text-end">Giá nhập</th>
+                            <th class="text-end">Giá bán</th>
+                            <th class="text-end">Lợi nhuận</th>
                             <th>Mô tả</th>
                             <th>Tồn tối thiểu</th>
                             <th>Tồn tối đa</th>
@@ -106,6 +109,19 @@
                                 @endif
                             </td>
                             <td>{{ $material->unit->name ?? 'N/A' }}</td>
+                            <td class="text-end">{{ number_format($material->cost_price) }} ₫</td>
+                            <td class="text-end">{{ number_format($material->selling_price) }} ₫</td>
+                            <td class="text-end">
+                                @if($material->profit > 0)
+                                    <span class="text-success fw-bold">+{{ number_format($material->profit) }} ₫</span>
+                                    <br><small class="badge text-bg-success">{{ $material->profit_margin }}%</small>
+                                @elseif($material->profit < 0)
+                                    <span class="text-danger fw-bold">{{ number_format($material->profit) }} ₫</span>
+                                    <br><small class="badge text-bg-danger">{{ $material->profit_margin }}%</small>
+                                @else
+                                    <span class="text-muted">0 ₫</span>
+                                @endif
+                            </td>
                             <td>{{ $material->description }}</td>
                             <td>{{ $material->min_stock }}</td>
                             <td>{{ $material->max_stock }}</td>
@@ -122,7 +138,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center">Chưa có dữ liệu</td>
+                            <td colspan="11" class="text-center">Chưa có dữ liệu</td>
                         </tr>
                         @endforelse
                     </tbody>

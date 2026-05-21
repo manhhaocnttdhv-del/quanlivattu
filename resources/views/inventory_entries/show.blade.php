@@ -57,7 +57,7 @@
                                 <th class="text-start">Tên vật tư</th>
                                 <th>ĐVT</th>
                                 <th>Số lượng</th>
-                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Đơn giá nhập</th>
                                 <th>Vị trí kệ</th>
                                 <th class="text-end">Thành tiền</th>
                             </tr>
@@ -66,7 +66,7 @@
                             @php $total = 0; @endphp
                             @foreach($inventoryEntry->details as $detail)
                             @php 
-                                $subtotal = $detail->quantity * $detail->price;
+                                $subtotal = $detail->quantity * $detail->unit_price;
                                 $total += $subtotal;
                             @endphp
                             <tr>
@@ -74,7 +74,7 @@
                                 <td class="text-start">{{ $detail->material->name ?? 'N/A' }}</td>
                                 <td>{{ $detail->material->unit->name ?? 'N/A' }}</td>
                                 <td>{{ number_format($detail->quantity, 2) }}</td>
-                                <td class="text-end">{{ number_format($detail->price) }} ₫</td>
+                                <td class="text-end">{{ number_format($detail->unit_price) }} ₫</td>
                                 <td><span class="badge text-bg-secondary">{{ $detail->location ?? 'N/A' }}</span></td>
                                 <td class="text-end fw-bold">{{ number_format($subtotal) }} ₫</td>
                             </tr>

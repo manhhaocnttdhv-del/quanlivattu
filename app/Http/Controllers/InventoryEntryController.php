@@ -75,7 +75,7 @@ class InventoryEntryController extends Controller
             'materials' => 'required|array|min:1',
             'materials.*.id' => 'required|exists:materials,id',
             'materials.*.quantity' => 'required|numeric|min:0.01',
-            'materials.*.price' => 'nullable|numeric|min:0',
+            'materials.*.unit_price' => 'nullable|numeric|min:0',
             'materials.*.location' => 'nullable|string|max:100',
         ]);
 
@@ -95,7 +95,7 @@ class InventoryEntryController extends Controller
                 $entry->details()->create([
                     'material_id' => $item['id'],
                     'quantity' => $item['quantity'],
-                    'price' => $item['price'] ?? 0,
+                    'unit_price' => $item['unit_price'] ?? 0,
                     'location' => $item['location'] ?? null,
                 ]);
             }
@@ -129,7 +129,7 @@ class InventoryEntryController extends Controller
                     $detail->material_id,
                     $detail->quantity,
                     'add',
-                    $detail->price,
+                    $detail->unit_price,
                     $detail->location
                 );
             }

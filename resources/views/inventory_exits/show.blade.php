@@ -57,20 +57,35 @@
                                 <th class="text-start">Tên vật tư</th>
                                 <th>ĐVT</th>
                                 <th>Số lượng</th>
+                                <th class="text-end">Đơn giá xuất</th>
                                 <th>Vị trí</th>
+                                <th class="text-end">Thành tiền</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @php $total = 0; @endphp
                             @foreach($inventoryExit->details as $detail)
+                            @php 
+                                $subtotal = $detail->quantity * $detail->unit_price;
+                                $total += $subtotal;
+                            @endphp
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td class="text-start">{{ $detail->material->name ?? 'N/A' }}</td>
                                 <td>{{ $detail->material->unit->name ?? 'N/A' }}</td>
                                 <td class="fw-bold">{{ number_format($detail->quantity, 2) }}</td>
+                                <td class="text-end">{{ number_format($detail->unit_price) }} ₫</td>
                                 <td><span class="badge text-bg-warning">{{ $detail->location ?? 'N/A' }}</span></td>
+                                <td class="text-end fw-bold">{{ number_format($subtotal) }} ₫</td>
                             </tr>
                             @endforeach
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="6" class="text-end fs-5">TỔNG CỘNG:</th>
+                                <th class="text-end fs-5 text-danger fw-bolder">{{ number_format($total) }} ₫</th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
                 <!-- /.col -->

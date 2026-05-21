@@ -28,6 +28,8 @@ class MaterialsImport implements ToModel, WithHeadingRow
                 'name' => $row['ten_vat_tu'],
                 'description' => $row['mo_ta'] ?? $material->description,
                 'unit_id' => $row['don_vi_tinh_id'] ?? $material->unit_id,
+                'cost_price' => $row['gia_nhap'] ?? $material->cost_price,
+                'selling_price' => $row['gia_ban'] ?? $material->selling_price,
                 'min_stock' => $row['ton_toi_thieu'] ?? $material->min_stock,
                 'max_stock' => $row['ton_toi_da'] ?? $material->max_stock,
             ]);
@@ -37,7 +39,9 @@ class MaterialsImport implements ToModel, WithHeadingRow
         return new Material([
             'name' => $row['ten_vat_tu'],
             'description' => $row['mo_ta'] ?? null,
-            'unit_id' => $row['don_vi_tinh_id'] ?? 1, // Default unit
+            'unit_id' => $row['don_vi_tinh_id'] ?? 1,
+            'cost_price' => $row['gia_nhap'] ?? 0,
+            'selling_price' => $row['gia_ban'] ?? 0,
             'min_stock' => $row['ton_toi_thieu'] ?? 0,
             'max_stock' => $row['ton_toi_da'] ?? 0,
         ]);

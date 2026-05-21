@@ -79,6 +79,7 @@ class InventoryExitController extends Controller
             'materials' => 'required|array|min:1',
             'materials.*.id' => 'required|exists:materials,id',
             'materials.*.quantity' => 'required|numeric|min:0.01',
+            'materials.*.unit_price' => 'nullable|numeric|min:0',
             'materials.*.location' => 'nullable|string|max:100',
         ]);
 
@@ -123,6 +124,7 @@ class InventoryExitController extends Controller
                 $exit->details()->create([
                     'material_id' => $item['id'],
                     'quantity' => $item['quantity'],
+                    'unit_price' => $item['unit_price'] ?? Material::find($item['id'])->selling_price ?? 0,
                     'location' => $item['location'] ?? null,
                 ]);
             }

@@ -67,6 +67,8 @@ class MaterialController extends Controller
             'unit_id' => 'required|exists:units,id',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
+            'cost_price' => 'nullable|numeric|min:0',
+            'selling_price' => 'nullable|numeric|min:0',
             'min_stock' => 'nullable|numeric|min:0',
             'max_stock' => 'nullable|numeric|min:0',
         ]);
@@ -94,6 +96,8 @@ class MaterialController extends Controller
             'unit_id' => 'required|exists:units,id',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
+            'cost_price' => 'nullable|numeric|min:0',
+            'selling_price' => 'nullable|numeric|min:0',
             'min_stock' => 'nullable|numeric|min:0',
             'max_stock' => 'nullable|numeric|min:0',
         ]);

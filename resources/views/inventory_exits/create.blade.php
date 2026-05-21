@@ -90,9 +90,10 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Tên Vật tư</th>
-                                    <th style="width: 15%;">ĐVT</th>
-                                    <th style="width: 20%;">Số lượng xuất</th>
-                                    <th style="width: 20%;">Vị trí lấy hàng</th>
+                                    <th style="width: 12%;">ĐVT</th>
+                                    <th style="width: 15%;">Số lượng xuất</th>
+                                    <th style="width: 15%;">Đơn giá</th>
+                                    <th style="width: 15%;">Vị trí lấy hàng</th>
                                     <th style="width: 10%; text-align: center;">Xóa</th>
                                 </tr>
                             </thead>
@@ -128,6 +129,7 @@
                 @endphp
                 <option value="{{ $material->id }}" 
                         data-unit="{{ $material->unit->name ?? '' }}"
+                        data-selling-price="{{ $material->selling_price ?? 0 }}"
                         data-stocks="{{ json_encode($stocks) }}">
                     {{ $material->name }}
                 </option>
@@ -137,6 +139,9 @@
         <td class="unit-cell text-center align-middle bg-light">-</td>
         <td>
             <input type="number" class="form-control text-end qty-input" name="materials[__INDEX__][quantity]" step="0.01" min="0.01" value="1" required>
+        </td>
+        <td>
+            <input type="number" class="form-control text-end price-input" name="materials[__INDEX__][unit_price]" min="0" value="0">
         </td>
         <td>
             <input type="text" class="form-control" name="materials[__INDEX__][location]" placeholder="Vị trí lấy hàng">
@@ -181,9 +186,14 @@
                 const selectedOption = e.target.options[e.target.selectedIndex];
                 const unitCell = row.querySelector('.unit-cell');
                 const locationInput = row.querySelector('input[name*="[location]"]');
+                const priceInput = row.querySelector('.price-input');
                 
                 const unitName = selectedOption.getAttribute('data-unit');
+                const defaultPrice = selectedOption.getAttribute('data-selling-price');
                 unitCell.textContent = unitName ? unitName : '-';
+                if (priceInput && defaultPrice) {
+                    priceInput.value = defaultPrice;
+                }
 
                 updateRowLocation(row);
             }
