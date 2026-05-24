@@ -119,10 +119,6 @@
                                 <a href="{{ route('inventory-exits.show', $exit) }}" class="btn btn-sm btn-info text-white">Xem</a>
                                 @if(auth()->check() && auth()->user()->hasRole(['Admin tổng', 'Admin kho']))
                                     @if($exit->status === 'pending')
-                                        <form action="{{ route('inventory-exits.approve', $exit) }}" method="POST" class="d-inline" onsubmit="return confirm('Duyệt phiếu này và trừ số lượng khỏi tồn kho?');">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
-                                        </form>
                                         <form action="{{ route('inventory-exits.cancel', $exit) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu này?');">
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-danger">Hủy</button>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\InventoryEntry;
+use App\Models\InventoryEntryDetail;
 use App\Models\Warehouse;
 use App\Models\Supplier;
 use App\Models\Material;
@@ -124,20 +125,23 @@ class InventoryEntryController extends Controller
             DB::beginTransaction();
 
             foreach ($inventoryEntry->details as $detail) {
-                $inventoryService->updateStock(
-                    $inventoryEntry->warehouse_id,
-                    $detail->material_id,
-                    $detail->quantity,
-                    'add',
-                    $detail->unit_price,
-                    $detail->location
-                );
+                if ($detail->status === 'pending') {
+                    $inventoryService->updateStock(
+                        $inventoryEntry->warehouse_id,
+                        $detail->material_id,
+                        $detail->quantity,
+                        'add',
+                        $detail->unit_price,
+                        $detail->location
+                    );
+                    $detail->update(['status' => 'approved']);
+                }
             }
 
             $inventoryEntry->update(['status' => 'completed']);
 
             DB::commit();
-            return back()->with('success', 'Đã duyệt phiếu nhập và cập nhật tồn kho!');
+            return back()->with('success', 'Đã duyệt toàn bộ phiếu nhập và cập nhật tồn kho!');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Lỗi khi duyệt: ' . $e->getMessage());
@@ -153,9 +157,9 @@ class InventoryEntryController extends Controller
         try {
             DB::beginTransaction();
 
-            // If it was completed, we need to reverse the stock addition
-            if ($inventoryEntry->status === 'completed') {
-                foreach ($inventoryEntry->details as $detail) {
+            // Reverse the stock addition only for details that have been approved
+            foreach ($inventoryEntry->details as $detail) {
+                if ($detail->status === 'approved') {
                     $inventoryService->updateStock(
                         $inventoryEntry->warehouse_id,
                         $detail->material_id,
@@ -173,6 +177,71 @@ class InventoryEntryController extends Controller
             DB::rollBack();
             return back()->with('error', 'Lỗi khi hủy: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Duyệt từng dòng vật tư trong phiếu nhập
+     */
+    public function approveDetail(InventoryEntry $inventoryEntry, InventoryEntryDetail $detail, \App\Services\InventoryService $inventoryService)
+    {
+        if ($inventoryEntry->status !== 'pending') {
+            return back()->with('error', 'Phiếu đã được xử lý xong, không thể duyệt thêm.');
+        }
+        if ($detail->status === 'approved') {
+            return back()->with('error', 'Dòng vật tư này đã được duyệt rồi.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Cộng tồn kho cho dòng này
+            $inventoryService->updateStock(
+                $inventoryEntry->warehouse_id,
+                $detail->material_id,
+                $detail->quantity,
+                'add',
+                $detail->unit_price,
+                $detail->location
+            );
+
+            $detail->update(['status' => 'approved']);
+
+            // Nếu tất cả dòng đều approved -> chuyển phiếu thành completed
+            $pendingCount = $inventoryEntry->details()->where('status', 'pending')->count();
+            if ($pendingCount === 0) {
+                $inventoryEntry->update(['status' => 'completed']);
+            }
+
+            DB::commit();
+            return back()->with('success', 'Đã duyệt dòng vật tư và cộng tồn kho!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Lỗi khi duyệt: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Xóa 1 dòng vật tư pending ra khỏi phiếu nhập
+     */
+    public function removeDetail(InventoryEntry $inventoryEntry, InventoryEntryDetail $detail)
+    {
+        if ($inventoryEntry->status !== 'pending') {
+            return back()->with('error', 'Phiếu đã xử lý xong, không thể xóa dòng.');
+        }
+        if ($detail->status === 'approved') {
+            return back()->with('error', 'Dòng đã duyệt, không thể xóa. Vui lòng hủy cả phiếu nếu cần.');
+        }
+
+        DB::transaction(function () use ($inventoryEntry, $detail) {
+            $detail->delete();
+
+            // Nếu phiếu hết dòng -> tự động hủy phiếu
+            if ($inventoryEntry->details()->count() === 0) {
+                $inventoryEntry->update(['status' => 'cancelled']);
+            }
+        });
+
+        return back()->with('success', 'Đã xóa dòng vật tư khỏi phiếu!');
     }
 
     public function edit(string $id)

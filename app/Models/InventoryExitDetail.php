@@ -9,7 +9,7 @@ class InventoryExitDetail extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['inventory_exit_id', 'material_id', 'quantity', 'unit_price', 'location'];
+    protected $fillable = ['inventory_exit_id', 'material_id', 'quantity', 'unit_price', 'location', 'status'];
 
     public function inventoryExit()
     {

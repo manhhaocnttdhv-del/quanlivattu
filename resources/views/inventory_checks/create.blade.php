@@ -83,7 +83,7 @@
                                     <span class="badge text-bg-secondary fs-6">{{ $item->stock }}</span>
                                 </td>
                                 <td>
-                                    <input type="number" step="0.01" class="form-control text-center actual-stock-input" 
+                                    <input type="number" step="any" class="form-control text-center actual-stock-input" 
                                            name="items[{{ $index }}][actual_stock]" 
                                            value="{{ old('items.'.$index.'.actual_stock') }}" 
                                            data-system="{{ $item->stock }}" required>

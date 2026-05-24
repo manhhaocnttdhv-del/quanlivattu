@@ -86,13 +86,14 @@
                     @endif
 
                     <div class="table-responsive">
-                        <table class="table table-bordered" id="materialsTable">
+                        <table class="table table-bordered align-middle" id="materialsTable">
                             <thead class="table-light">
                                 <tr>
                                     <th>Tên Vật tư</th>
-                                    <th style="width: 15%;">ĐVT</th>
+                                    <th style="width: 10%;">ĐVT</th>
                                     <th style="width: 15%;">Số lượng</th>
                                     <th style="width: 15%;">Đơn giá</th>
+                                    <th style="width: 15%;">Thành tiền</th>
                                     <th style="width: 15%;">Vị trí kệ</th>
                                     <th style="width: 10%; text-align: center;">Xóa</th>
                                 </tr>
@@ -100,6 +101,12 @@
                             <tbody id="materialList">
                                 <!-- Rows will be added here via JS -->
                             </tbody>
+                            <tfoot>
+                                <tr class="table-light fw-bold">
+                                    <td colspan="4" class="text-end fw-bold">TỔNG CỘNG:</td>
+                                    <td colspan="3" class="text-start text-danger fw-bolder" id="totalAmount">0 ₫</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -128,6 +135,7 @@
                     });
                 @endphp
                 <option value="{{ $material->id }}" 
+                        data-name="{{ $material->name }}"
                         data-unit="{{ $material->unit->name ?? '' }}" 
                         data-stocks="{{ json_encode($stocks) }}">
                     {{ $material->name }}
@@ -137,11 +145,12 @@
         </td>
         <td class="unit-cell text-center align-middle bg-light">-</td>
         <td>
-            <input type="number" class="form-control text-end qty-input" name="materials[__INDEX__][quantity]" step="0.01" min="0.01" value="1" required>
+            <input type="number" class="form-control text-end qty-input" name="materials[__INDEX__][quantity]" step="any" min="0.01" value="1" required>
         </td>
         <td>
             <input type="number" class="form-control text-end price-input" name="materials[__INDEX__][unit_price]" min="0" value="0">
         </td>
+        <td class="subtotal-cell text-end align-middle fw-bold bg-light">0 ₫</td>
         <td>
             <input type="text" class="form-control" name="materials[__INDEX__][location]" placeholder="Vị trí (vd: Kệ A1)">
         </td>
@@ -170,11 +179,41 @@
             addRow();
         });
 
+        function calculateTotals() {
+            let total = 0;
+            listBody.querySelectorAll('tr').forEach(row => {
+                const qtyInput = row.querySelector('.qty-input');
+                const priceInput = row.querySelector('.price-input');
+                const subtotalCell = row.querySelector('.subtotal-cell');
+
+                const qty = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
+                const price = parseFloat(priceInput ? priceInput.value : 0) || 0;
+                const subtotal = qty * price;
+                total += subtotal;
+
+                if (subtotalCell) {
+                    subtotalCell.textContent = new Intl.NumberFormat('vi-VN').format(subtotal) + ' ₫';
+                }
+            });
+
+            const totalAmountEl = document.getElementById('totalAmount');
+            if (totalAmountEl) {
+                totalAmountEl.textContent = new Intl.NumberFormat('vi-VN').format(total) + ' ₫';
+            }
+        }
+
+        listBody.addEventListener('input', function(e) {
+            if (e.target.classList.contains('qty-input') || e.target.classList.contains('price-input')) {
+                calculateTotals();
+            }
+        });
+
         listBody.addEventListener('click', function(e) {
             if (e.target.closest('.remove-row-btn')) {
                 const row = e.target.closest('tr');
                 if (listBody.querySelectorAll('tr').length > 1) {
                     row.remove();
+                    calculateTotals();
                 } else {
                     alert('Phiếu nhập phải có ít nhất 1 vật tư.');
                 }
@@ -190,7 +229,7 @@
                 const locationInput = row.querySelector('input[name*="[location]"]');
                 const warehouseId = warehouseSelect.value;
                 
-                const unitName = selectedOption.getAttribute('data-unit');
+                const unitName = selectedOption ? selectedOption.getAttribute('data-unit') : '';
                 unitCell.textContent = unitName ? unitName : '-';
                 
                 if (selectedOption && selectedOption.value && warehouseId) {
@@ -203,8 +242,30 @@
                         if (locationInput) locationInput.value = '';
                     }
                 }
+                calculateTotals();
             }
         });
+
+        function updateRowStockText(selectElement) {
+            const selectedWarehouse = warehouseSelect.value;
+            const options = selectElement.querySelectorAll('option');
+            
+            options.forEach(option => {
+                if (option.value === '') return;
+                
+                const originalName = option.getAttribute('data-name');
+                let stockAmount = 0;
+                
+                if (selectedWarehouse) {
+                    const stocks = JSON.parse(option.getAttribute('data-stocks') || '{}');
+                    if (stocks[selectedWarehouse]) {
+                        stockAmount = parseFloat(stocks[selectedWarehouse].stock);
+                    }
+                }
+                
+                option.textContent = `${originalName} (Tồn: ${stockAmount})`;
+            });
+        }
 
         form.addEventListener('submit', function(e) {
             if (listBody.querySelectorAll('tr').length === 0) {
@@ -216,7 +277,13 @@
         function addRow() {
             let newRowHtml = template.replace(/__INDEX__/g, materialIndex);
             listBody.insertAdjacentHTML('beforeend', newRowHtml);
+            const newRow = listBody.lastElementChild;
+            const newSelect = newRow.querySelector('.material-select');
+            if (newSelect) {
+                updateRowStockText(newSelect);
+            }
             materialIndex++;
+            calculateTotals();
         }
 
         function filterSuppliers() {
@@ -262,16 +329,23 @@
                     }
                 }
             });
+            calculateTotals();
         }
 
         warehouseSelect.addEventListener('change', function() {
             filterSuppliers();
             updateAllRowsData();
+            listBody.querySelectorAll('.material-select').forEach(select => {
+                updateRowStockText(select);
+            });
         });
         
         // Run once on load
         if (warehouseSelect.value) {
             filterSuppliers();
+            listBody.querySelectorAll('.material-select').forEach(select => {
+                updateRowStockText(select);
+            });
         }
     });
 </script>

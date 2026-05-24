@@ -235,6 +235,49 @@
               </li>
               @endcan
 
+              {{-- Nhân viên kho --}}
+              @canany(['Xem nhân viên kho', 'Quản lý ca làm việc', 'Quản lý lương'])
+              <li class="nav-item {{ request()->routeIs('warehouse-staffs.*') || request()->routeIs('shifts.*') || request()->routeIs('shift-logs.*') || request()->routeIs('salaries.*') ? 'menu-open' : '' }}">
+                <a href="#" class="nav-link {{ request()->routeIs('warehouse-staffs.*') || request()->routeIs('shifts.*') || request()->routeIs('shift-logs.*') || request()->routeIs('salaries.*') ? 'active' : '' }}">
+                  <i class="nav-icon bi bi-person-vcard"></i>
+                  <p>
+                    Nhân viên Kho
+                    <i class="nav-arrow bi bi-chevron-right"></i>
+                  </p>
+                </a>
+                <ul class="nav nav-treeview">
+                  @can('Xem nhân viên kho')
+                  <li class="nav-item">
+                    <a href="{{ route('warehouse-staffs.index') }}" class="nav-link {{ request()->routeIs('warehouse-staffs.*') ? 'active' : '' }}">
+                      <i class="nav-icon bi bi-circle"></i><p>Danh sách NV</p>
+                    </a>
+                  </li>
+                  @endcan
+                  
+                  @can('Quản lý ca làm việc')
+                  <li class="nav-item">
+                    <a href="{{ route('shifts.index') }}" class="nav-link {{ request()->routeIs('shifts.*') ? 'active' : '' }}">
+                      <i class="nav-icon bi bi-circle"></i><p>Ca làm việc</p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{{ route('shift-logs.index') }}" class="nav-link {{ request()->routeIs('shift-logs.*') ? 'active' : '' }}">
+                      <i class="nav-icon bi bi-circle"></i><p>Chấm công</p>
+                    </a>
+                  </li>
+                  @endcan
+
+                  @can('Quản lý lương')
+                  <li class="nav-item">
+                    <a href="{{ route('salaries.index') }}" class="nav-link {{ request()->routeIs('salaries.*') ? 'active' : '' }}">
+                      <i class="nav-icon bi bi-circle"></i><p>Bảng lương</p>
+                    </a>
+                  </li>
+                  @endcan
+                </ul>
+              </li>
+              @endcanany
+
               <li class="nav-header">NGHIỆP VỤ</li>
               @can('view-inventory-entries')
               <li class="nav-item">
@@ -271,19 +314,50 @@
               </li>
               @endcan
 
-              @can('view-reports')
-              <li class="nav-header">BÁO CÁO</li>
+              @can('Xem cảnh báo tồn kho')
+              <li class="nav-header">CẢNH BÁO</li>
               <li class="nav-item">
-                <a href="{{ route('reports.inventory') }}" class="nav-link {{ request()->routeIs('reports.inventory') ? 'active' : '' }}">
-                  <i class="nav-icon bi bi-file-earmark-bar-graph"></i>
-                  <p>Báo cáo Tồn kho</p>
+                <a href="{{ route('inventory-alerts.index') }}" class="nav-link {{ request()->routeIs('inventory-alerts.*') ? 'active' : '' }}">
+                  <i class="nav-icon bi bi-exclamation-triangle text-danger"></i>
+                  <p>Cảnh báo tồn kho</p>
                 </a>
+              </li>
+              @endcan
+
+              @can('Xem báo cáo tồn kho')
+              <li class="nav-header">BÁO CÁO</li>
+              <li class="nav-item {{ request()->routeIs('reports.*') ? 'menu-open' : '' }}">
+                <a href="#" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                  <i class="nav-icon bi bi-file-earmark-bar-graph"></i>
+                  <p>Báo cáo<i class="nav-arrow bi bi-chevron-right"></i></p>
+                </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="{{ route('reports.inventory') }}" class="nav-link {{ request()->routeIs('reports.inventory') ? 'active' : '' }}">
+                      <i class="nav-icon bi bi-circle"></i><p>Tồn kho hiện tại</p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{{ route('reports.material-history') }}" class="nav-link {{ request()->routeIs('reports.material-history') ? 'active' : '' }}">
+                      <i class="nav-icon bi bi-circle"></i><p>Lịch sử vật tư</p>
+                    </a>
+                  </li>
+                </ul>
               </li>
               @endcan
 
               <li class="nav-item">
                 <hr class="mx-2 my-1 text-white-50">
               </li>
+
+              @can('Phân quyền người dùng')
+              <li class="nav-item">
+                <a href="{{ route('settings.index') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                  <i class="nav-icon bi bi-gear-fill"></i>
+                  <p>Cài đặt chung</p>
+                </a>
+              </li>
+              @endcan
 
               <li class="nav-item">
                 <a href="{{ route('logout') }}" 
@@ -350,6 +424,44 @@
       <!--end::Footer-->
     </div>
     <!--end::App Wrapper-->
+
+    <!-- Low Stock Alert Modal -->
+    <div class="modal fade" id="lowStockAlertModal" tabindex="-1" aria-labelledby="lowStockAlertModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="lowStockAlertModalLabel">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i> Cảnh Báo Tồn Kho Dưới Định Mức!
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Hệ thống ghi nhận một số vật tư đã giảm xuống dưới mức tối thiểu quy định. Vui lòng kiểm tra và lên kế hoạch nhập hàng:</p>
+            <div class="table-responsive">
+              <table class="table table-striped table-bordered text-center align-middle">
+                <thead class="table-danger">
+                  <tr>
+                    <th>Tên vật tư</th>
+                    <th>Kho hàng</th>
+                    <th>Tồn kho hiện tại</th>
+                    <th>Định mức tối thiểu</th>
+                  </tr>
+                </thead>
+                <tbody id="lowStockModalBody">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            @can('Xem cảnh báo tồn kho')
+            <a href="{{ route('inventory-alerts.index') }}" class="btn btn-danger">Xem chi tiết cảnh báo</a>
+            @endcan
+          </div>
+        </div>
+      </div>
+    </div>
     <!--begin::Script-->
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
     <script
@@ -398,6 +510,41 @@
     <!--end::OverlayScrollbars Configure-->
     @yield('scripts')
     @stack('scripts')
+    
+    <!-- Low Stock Alert Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          fetch('{{ route("api.low-stock-alerts") }}')
+              .then(response => response.json())
+              .then(data => {
+                  if (data.alerts && data.alerts.length > 0) {
+                      const tbody = document.getElementById('lowStockModalBody');
+                      if (tbody) {
+                          tbody.innerHTML = '';
+                          data.alerts.forEach(item => {
+                              const row = `
+                                  <tr>
+                                      <td class="text-start fw-bold">${item.material_name}</td>
+                                      <td>${item.warehouse_name}</td>
+                                      <td class="text-danger fw-bold">${parseFloat(item.stock).toLocaleString('vi-VN')} ${item.unit}</td>
+                                      <td class="text-secondary">${parseFloat(item.min_stock).toLocaleString('vi-VN')} ${item.unit}</td>
+                                  </tr>
+                              `;
+                              tbody.insertAdjacentHTML('beforeend', row);
+                          });
+                          
+                          // Show modal using Bootstrap instance
+                          const alertModalEl = document.getElementById('lowStockAlertModal');
+                          if (alertModalEl && typeof bootstrap !== 'undefined') {
+                              const modal = new bootstrap.Modal(alertModalEl);
+                              modal.show();
+                          }
+                      }
+                  }
+              })
+              .catch(error => console.error('Error fetching low stock alerts:', error));
+      });
+    </script>
     <!--end::Script-->
   </body>
   <!--end::Body-->

@@ -171,19 +171,35 @@ return [
         'group' => 'Quản lý Người dùng',
         'permissions' => [
             [
-                'name'        => 'Xem danh sách người dùng',
-                'description' => 'Truy cập trang quản lý người dùng',
-                'roles'       => ['Admin tổng'],
-            ],
-            [
-                'name'        => 'Thêm / Sửa / Xóa người dùng',
-                'description' => 'Tạo, cập nhật, xóa tài khoản người dùng',
-                'roles'       => ['Admin tổng'],
-            ],
-            [
                 'name'        => 'Phân quyền người dùng',
                 'description' => 'Xem ma trận phân quyền theo role',
                 'roles'       => ['Admin tổng'],
+            ],
+        ],
+    ],
+
+    [
+        'group' => 'Quản lý Nhân viên Kho',
+        'permissions' => [
+            [
+                'name'        => 'Xem nhân viên kho',
+                'description' => 'Xem danh sách nhân viên, hồ sơ nhân viên của kho mình',
+                'roles'       => ['Admin tổng', 'Admin kho'],
+            ],
+            [
+                'name'        => 'Thêm / Sửa / Xóa nhân viên kho',
+                'description' => 'Tạo, cập nhật, xóa hồ sơ nhân viên',
+                'roles'       => ['Admin tổng', 'Admin kho'],
+            ],
+            [
+                'name'        => 'Quản lý ca làm việc',
+                'description' => 'Tạo ca, duyệt công (đối với Admin) / Tự chấm công (đối với Nhân viên)',
+                'roles'       => ['Admin tổng', 'Admin kho', 'Nhân viên kho'],
+            ],
+            [
+                'name'        => 'Quản lý lương',
+                'description' => 'Tính lương, xác nhận và thanh toán bảng lương',
+                'roles'       => ['Admin tổng', 'Admin kho'],
             ],
         ],
     ],

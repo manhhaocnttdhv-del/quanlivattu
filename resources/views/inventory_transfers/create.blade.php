@@ -127,6 +127,7 @@
                     });
                 @endphp
                 <option value="{{ $material->id }}" 
+                        data-name="{{ $material->name }}"
                         data-unit="{{ $material->unit->name ?? '' }}"
                         data-stocks="{{ json_encode($stocks) }}">
                     {{ $material->name }}
@@ -136,7 +137,7 @@
         </td>
         <td class="unit-cell text-center align-middle bg-light">-</td>
         <td>
-            <input type="number" class="form-control text-end qty-input" name="materials[__INDEX__][quantity]" step="0.01" min="0.01" value="1" required>
+            <input type="number" class="form-control text-end qty-input" name="materials[__INDEX__][quantity]" step="any" min="0.01" value="1" required>
         </td>
         <td>
             <input type="text" class="form-control" name="materials[__INDEX__][location]" readonly placeholder="Vị trí lấy hàng">
@@ -156,6 +157,8 @@
         const listBody = document.getElementById('materialList');
         const template = document.getElementById('materialRowTemplate').innerHTML;
         const form = document.getElementById('transferForm');
+        const fromWhSelect = document.getElementById('from_warehouse_id');
+        const toWhSelect = document.getElementById('to_warehouse_id');
 
         // Add first row automatically
         addRow();
@@ -182,18 +185,54 @@
                 const unitCell = row.querySelector('.unit-cell');
                 const locationInput = row.querySelector('input[name*="[location]"]');
                 
-                const unitName = selectedOption.getAttribute('data-unit');
+                const unitName = selectedOption ? selectedOption.getAttribute('data-unit') : '';
                 unitCell.textContent = unitName ? unitName : '-';
 
                 updateRowLocation(row);
             }
         });
 
+        function filterMaterials(selectElement) {
+            const selectedWarehouse = fromWhSelect.value;
+            const options = selectElement.querySelectorAll('option');
+            
+            options.forEach(option => {
+                if (option.value === '') return; // Skip placeholder
+                
+                const originalName = option.getAttribute('data-name');
+                let hasStock = false;
+                let stockAmount = 0;
+                
+                if (selectedWarehouse) {
+                    const stocks = JSON.parse(option.getAttribute('data-stocks') || '{}');
+                    if (stocks[selectedWarehouse] && parseFloat(stocks[selectedWarehouse].stock) > 0) {
+                        hasStock = true;
+                        stockAmount = parseFloat(stocks[selectedWarehouse].stock);
+                    }
+                }
+                
+                if (hasStock) {
+                    option.style.display = '';
+                    option.disabled = false;
+                    option.textContent = `${originalName} (Tồn: ${stockAmount})`;
+                } else {
+                    option.style.display = 'none';
+                    option.disabled = true;
+                    option.textContent = originalName;
+                    if (selectElement.value === option.value) {
+                        selectElement.value = '';
+                        selectElement.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                }
+            });
+        }
+
         function updateRowLocation(row) {
             const materialSelect = row.querySelector('.material-select');
+            if (!materialSelect) return;
             const selectedOption = materialSelect.options[materialSelect.selectedIndex];
             const locationInput = row.querySelector('input[name*="[location]"]');
-            const fromWhId = document.getElementById('from_warehouse_id').value;
+            const fromWhId = fromWhSelect.value;
 
             if (selectedOption && selectedOption.value && fromWhId) {
                 const stocks = JSON.parse(selectedOption.getAttribute('data-stocks') || '{}');
@@ -202,13 +241,15 @@
                 } else {
                     locationInput.value = 'Hết hàng/Không có';
                 }
+            } else {
+                if (locationInput) locationInput.value = '';
             }
         }
-
-        const fromWhSelect = document.getElementById('from_warehouse_id');
-        const toWhSelect = document.getElementById('to_warehouse_id');
         
         fromWhSelect.addEventListener('change', function() {
+            listBody.querySelectorAll('.material-select').forEach(select => {
+                filterMaterials(select);
+            });
             listBody.querySelectorAll('tr').forEach(row => {
                 updateRowLocation(row);
             });
@@ -233,7 +274,18 @@
         function addRow() {
             let newRowHtml = template.replace(/__INDEX__/g, materialIndex);
             listBody.insertAdjacentHTML('beforeend', newRowHtml);
+            const newRow = listBody.lastElementChild;
+            const newSelect = newRow.querySelector('.material-select');
+            if (newSelect) {
+                filterMaterials(newSelect);
+            }
             materialIndex++;
+        }
+
+        if (fromWhSelect.value) {
+            listBody.querySelectorAll('.material-select').forEach(select => {
+                filterMaterials(select);
+            });
         }
     });
 </script>

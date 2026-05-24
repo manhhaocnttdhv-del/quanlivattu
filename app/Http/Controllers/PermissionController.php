@@ -18,51 +18,32 @@ class PermissionController extends Controller
     /** Hiển thị ma trận phân quyền (có thể chỉnh sửa) */
     public function index()
     {
-        if (!auth()->user()->isAdminTong()) {
-            abort(403, 'Bạn không có quyền truy cập trang này.');
-        }
+        // Load từ DB
+        $dbPerms = RolePermission::all();
+        $rawGroups = config('permissions');
 
-        // Load từ DB, nhóm theo group_name
-        $dbPerms = RolePermission::all()->groupBy('group_name');
+        $permissions = collect($rawGroups)->map(function ($group) use ($dbPerms) {
+            $rows = collect($group['permissions'])->map(function ($perm) use ($group, $dbPerms) {
+                $byRole = [];
+                foreach ($this->roles as $role) {
+                    // Tìm trong DB
+                    $dbRecord = $dbPerms->where('role', $role)->where('permission_name', $perm['name'])->first();
 
-        // Nếu DB chưa có dữ liệu, fallback từ config
-        if ($dbPerms->isEmpty()) {
-            $rawGroups  = config('permissions');
-            $permissions = collect($rawGroups)->map(function ($group) {
-                $rows = collect($group['permissions'])->map(function ($perm) use ($group) {
-                    $byRole = [];
-                    foreach ($this->roles as $role) {
+                    if ($dbRecord) {
+                        $byRole[$role] = (bool) $dbRecord->is_granted;
+                    } else {
+                        // Fallback mặc định từ config nếu DB chưa có
                         $byRole[$role] = in_array($role, $perm['roles']);
                     }
-                    return [
-                        'name'        => $perm['name'],
-                        'description' => $perm['description'] ?? '',
-                        'by_role'     => $byRole,
-                    ];
-                });
-                return ['group' => $group['group'], 'permissions' => $rows];
+                }
+                return [
+                    'name'        => $perm['name'],
+                    'description' => $perm['description'] ?? '',
+                    'by_role'     => $byRole,
+                ];
             });
-        } else {
-            $permissions = $dbPerms->map(function ($perms, $groupName) {
-                // pivot: permission_name → role → is_granted
-                $byName = $perms->groupBy('permission_name');
-                $rows = $byName->map(function ($roleRows, $permName) {
-                    $byRole = [];
-                    foreach ($this->roles as $role) {
-                        $row = $roleRows->firstWhere('role', $role);
-                        $byRole[$role] = $row ? (bool) $row->is_granted : false;
-                    }
-                    $first = $roleRows->first();
-                    return [
-                        'name'        => $permName,
-                        'description' => $first->description ?? '',
-                        'by_role'     => $byRole,
-                    ];
-                })->values();
-
-                return ['group' => $groupName, 'permissions' => $rows];
-            })->values();
-        }
+            return ['group' => $group['group'], 'permissions' => $rows];
+        });
 
         return view('permissions.index', [
             'permissions' => $permissions,
@@ -73,10 +54,6 @@ class PermissionController extends Controller
     /** Lưu thay đổi ma trận phân quyền theo role */
     public function update(Request $request)
     {
-        if (!auth()->user()->isAdminTong()) {
-            abort(403);
-        }
-
         $groups     = config('permissions');
         $submitted  = $request->input('perms', []); // perms[role][perm_name] = 1
 

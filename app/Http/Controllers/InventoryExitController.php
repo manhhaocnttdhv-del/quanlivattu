@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\InventoryExit;
+use App\Models\InventoryExitDetail;
 use App\Models\Warehouse;
 use App\Models\Project;
 use App\Models\Material;
@@ -158,21 +159,24 @@ class InventoryExitController extends Controller
             DB::beginTransaction();
 
             foreach ($inventoryExit->details as $detail) {
-                // Will throw exception if insufficient stock during transaction
-                $inventoryService->updateStock(
-                    $inventoryExit->warehouse_id,
-                    $detail->material_id,
-                    $detail->quantity,
-                    'subtract',
-                    null,
-                    $detail->location
-                );
+                if ($detail->status === 'pending') {
+                    // Will throw exception if insufficient stock during transaction
+                    $inventoryService->updateStock(
+                        $inventoryExit->warehouse_id,
+                        $detail->material_id,
+                        $detail->quantity,
+                        'subtract',
+                        null,
+                        $detail->location
+                    );
+                    $detail->update(['status' => 'approved']);
+                }
             }
 
             $inventoryExit->update(['status' => 'completed']);
 
             DB::commit();
-            return back()->with('success', 'Đã duyệt phiếu xuất và trừ tồn kho!');
+            return back()->with('success', 'Đã duyệt toàn bộ phiếu xuất và trừ tồn kho!');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Lỗi khi duyệt: ' . $e->getMessage());
@@ -188,9 +192,9 @@ class InventoryExitController extends Controller
         try {
             DB::beginTransaction();
 
-            // If it was completed, we need to reverse the stock subtraction by adding it back
-            if ($inventoryExit->status === 'completed') {
-                foreach ($inventoryExit->details as $detail) {
+            // Revert stock subtraction only for details that have been approved
+            foreach ($inventoryExit->details as $detail) {
+                if ($detail->status === 'approved') {
                     $inventoryService->updateStock(
                         $inventoryExit->warehouse_id,
                         $detail->material_id,
@@ -208,6 +212,71 @@ class InventoryExitController extends Controller
             DB::rollBack();
             return back()->with('error', 'Lỗi khi hủy: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Duyệt từng dòng vật tư trong phiếu xuất
+     */
+    public function approveDetail(InventoryExit $inventoryExit, InventoryExitDetail $detail, \App\Services\InventoryService $inventoryService)
+    {
+        if ($inventoryExit->status !== 'pending') {
+            return back()->with('error', 'Phiếu đã được xử lý xong, không thể duyệt thêm.');
+        }
+        if ($detail->status === 'approved') {
+            return back()->with('error', 'Dòng vật tư này đã được duyệt rồi.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Trừ tồn kho cho dòng này
+            $inventoryService->updateStock(
+                $inventoryExit->warehouse_id,
+                $detail->material_id,
+                $detail->quantity,
+                'subtract',
+                null,
+                $detail->location
+            );
+
+            $detail->update(['status' => 'approved']);
+
+            // Nếu tất cả dòng đều approved -> chuyển phiếu thành completed
+            $pendingCount = $inventoryExit->details()->where('status', 'pending')->count();
+            if ($pendingCount === 0) {
+                $inventoryExit->update(['status' => 'completed']);
+            }
+
+            DB::commit();
+            return back()->with('success', 'Đã duyệt dòng vật tư và trừ tồn kho!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Lỗi khi duyệt: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Xóa 1 dòng vật tư pending ra khỏi phiếu xuất
+     */
+    public function removeDetail(InventoryExit $inventoryExit, InventoryExitDetail $detail)
+    {
+        if ($inventoryExit->status !== 'pending') {
+            return back()->with('error', 'Phiếu đã xử lý xong, không thể xóa dòng.');
+        }
+        if ($detail->status === 'approved') {
+            return back()->with('error', 'Dòng đã duyệt, không thể xóa. Vui lòng hủy cả phiếu nếu cần.');
+        }
+
+        DB::transaction(function () use ($inventoryExit, $detail) {
+            $detail->delete();
+
+            // Nếu phiếu hết dòng -> tự động hủy phiếu
+            if ($inventoryExit->details()->count() === 0) {
+                $inventoryExit->update(['status' => 'cancelled']);
+            }
+        });
+
+        return back()->with('success', 'Đã xóa dòng vật tư khỏi phiếu!');
     }
 
     public function edit(string $id)

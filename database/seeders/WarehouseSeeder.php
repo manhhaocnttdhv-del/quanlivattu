@@ -11,6 +11,9 @@ use App\Models\Supplier;
 use App\Models\Project;
 use App\Models\MaterialWarehouse;
 use App\Models\Category;
+use App\Models\WarehouseStaff;
+use App\Models\Shift;
+use Illuminate\Support\Carbon;
 
 class WarehouseSeeder extends Seeder
 {
@@ -124,6 +127,73 @@ class WarehouseSeeder extends Seeder
         );
 
         $this->command->info('✅ Đã tạo ' . User::count() . ' tài khoản người dùng.');
+
+        // =============================================
+        // 6.1 HỒ SƠ NHÂN VIÊN KHO (WarehouseStaff)
+        // =============================================
+        $nv1 = User::where('email', 'nv1@gmail.com')->first();
+        if ($nv1) {
+            WarehouseStaff::updateOrCreate(['user_id' => $nv1->id], [
+                'warehouse_id' => $nv1->warehouse_id,
+                'full_name'    => 'Nguyễn Văn An',
+                'phone'        => '0987654321',
+                'id_card'      => '001090123456',
+                'gender'       => 'male',
+                'position'     => 'Nhân viên thủ kho',
+                'start_date'   => Carbon::now()->subMonths(6),
+                'base_salary'  => 8000000,
+                'status'       => 'active'
+            ]);
+        }
+
+        $nv2 = User::where('email', 'nv2@gmail.com')->first();
+        if ($nv2) {
+            WarehouseStaff::updateOrCreate(['user_id' => $nv2->id], [
+                'warehouse_id' => $nv2->warehouse_id,
+                'full_name'    => 'Trần Thị Bình',
+                'phone'        => '0912345678',
+                'id_card'      => '001090654321',
+                'gender'       => 'female',
+                'position'     => 'Nhân viên kiểm kê',
+                'start_date'   => Carbon::now()->subMonths(3),
+                'base_salary'  => 7500000,
+                'status'       => 'active'
+            ]);
+        }
+
+        $nv3 = User::where('email', 'nv3@gmail.com')->first();
+        if ($nv3) {
+            WarehouseStaff::updateOrCreate(['user_id' => $nv3->id], [
+                'warehouse_id' => $nv3->warehouse_id,
+                'full_name'    => 'Lê Văn Cường',
+                'phone'        => '0909123456',
+                'id_card'      => '001090987654',
+                'gender'       => 'male',
+                'position'     => 'Nhân viên xuất nhập',
+                'start_date'   => Carbon::now()->subYear(),
+                'base_salary'  => 8500000,
+                'status'       => 'active'
+            ]);
+        }
+        $this->command->info('✅ Đã tạo ' . WarehouseStaff::count() . ' hồ sơ nhân viên kho.');
+
+        // =============================================
+        // 6.2 CA LÀM VIỆC (Shift)
+        // =============================================
+        $shifts = [
+            ['name' => 'Ca sáng', 'start_time' => '07:30:00', 'end_time' => '11:30:00'],
+            ['name' => 'Ca chiều', 'start_time' => '13:00:00', 'end_time' => '17:00:00'],
+        ];
+
+        foreach ([$khoHN, $khoTH] as $kho) {
+            foreach ($shifts as $shift) {
+                Shift::updateOrCreate(
+                    ['warehouse_id' => $kho->id, 'name' => $shift['name']],
+                    ['start_time' => $shift['start_time'], 'end_time' => $shift['end_time']]
+                );
+            }
+        }
+        $this->command->info('✅ Đã tạo ' . Shift::count() . ' ca làm việc mẫu.');
 
         // =============================================
         // 7. NHÀ CUNG CẤP

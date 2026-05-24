@@ -6,6 +6,14 @@
 @section('content')
 <div class="row">
     <div class="col-12">
+
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show">{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        @endif
+
         <div class="invoice p-3 mb-3 border rounded shadow-sm bg-body">
             <!-- title row -->
             <div class="row">
@@ -14,6 +22,13 @@
                         <i class="bi bi-box-arrow-in-right"></i> PHIẾU NHẬP KHO
                         <small class="float-end">Ngày lập: {{ \Carbon\Carbon::parse($inventoryEntry->date)->format('d/m/Y') }}</small>
                     </h4>
+                    <div class="mt-2">
+                        @php
+                            $statusMap = ['pending' => ['label' => 'Chờ duyệt', 'color' => 'warning'], 'completed' => ['label' => 'Hoàn thành', 'color' => 'success'], 'cancelled' => ['label' => 'Đã hủy', 'color' => 'danger']];
+                            $s = $statusMap[$inventoryEntry->status] ?? ['label' => $inventoryEntry->status, 'color' => 'secondary'];
+                        @endphp
+                        <span class="badge text-bg-{{ $s['color'] }} fs-6">{{ $s['label'] }}</span>
+                    </div>
                 </div>
                 <!-- /.col -->
             </div>
@@ -60,6 +75,12 @@
                                 <th class="text-end">Đơn giá nhập</th>
                                 <th>Vị trí kệ</th>
                                 <th class="text-end">Thành tiền</th>
+                                <th class="text-center">Trạng thái</th>
+                                @if($inventoryEntry->status === 'pending')
+                                @can('Duyệt / Hủy phiếu nhập kho')
+                                <th class="text-center d-print-none">Thao tác</th>
+                                @endcan
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -67,23 +88,63 @@
                             @foreach($inventoryEntry->details as $detail)
                             @php 
                                 $subtotal = $detail->quantity * $detail->unit_price;
-                                $total += $subtotal;
+                                $total += ($detail->status === 'approved') ? $subtotal : 0;
                             @endphp
-                            <tr>
+                            <tr class="{{ $detail->status === 'approved' ? 'table-success' : '' }}">
                                 <td>{{ $loop->iteration }}</td>
                                 <td class="text-start">{{ $detail->material->name ?? 'N/A' }}</td>
                                 <td>{{ $detail->material->unit->name ?? 'N/A' }}</td>
-                                <td>{{ number_format($detail->quantity, 2) }}</td>
+                                <td class="fw-bold">{{ number_format($detail->quantity, 2) }}</td>
                                 <td class="text-end">{{ number_format($detail->unit_price) }} ₫</td>
-                                <td><span class="badge text-bg-secondary">{{ $detail->location ?? 'N/A' }}</span></td>
+                                <td><span class="badge text-bg-warning">{{ $detail->location ?? 'N/A' }}</span></td>
                                 <td class="text-end fw-bold">{{ number_format($subtotal) }} ₫</td>
+                                <td class="text-center">
+                                    @if($detail->status === 'approved')
+                                        <span class="badge text-bg-success"><i class="bi bi-check-circle"></i> Đã duyệt</span>
+                                    @else
+                                        <span class="badge text-bg-secondary"><i class="bi bi-hourglass-split"></i> Chờ duyệt</span>
+                                    @endif
+                                </td>
+                                @if($inventoryEntry->status === 'pending')
+                                @can('Duyệt / Hủy phiếu nhập kho')
+                                <td class="text-center d-print-none">
+                                    @if($detail->status === 'pending')
+                                        {{-- Nút Duyệt --}}
+                                        <form action="{{ route('inventory-entries.details.approve', [$inventoryEntry, $detail]) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success"
+                                                    onclick="return confirm('Duyệt dòng vật tư này và cộng tồn kho?')">
+                                                <i class="bi bi-check-lg"></i> Duyệt
+                                            </button>
+                                        </form>
+                                        {{-- Nút Xóa khỏi phiếu --}}
+                                        <form action="{{ route('inventory-entries.details.remove', [$inventoryEntry, $detail]) }}" method="POST" class="d-inline">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Xóa dòng vật tư &quot;{{ $detail->material->name }}&quot; khỏi phiếu? Hành động này không thể hoàn tác.')">
+                                                <i class="bi bi-x-lg"></i> Xóa
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="text-muted small">—</span>
+                                    @endif
+                                </td>
+                                @endcan
+                                @endif
                             </tr>
                             @endforeach
                         </tbody>
                         <tfoot>
                             <tr>
-                                <th colspan="6" class="text-end fs-5">TỔNG CỘNG:</th>
+                                <th colspan="{{ $inventoryEntry->status === 'pending' ? '8' : '7' }}" class="text-end fs-5">
+                                    TỔNG CỘNG (các dòng đã duyệt):
+                                </th>
                                 <th class="text-end fs-5 text-danger fw-bolder">{{ number_format($total) }} ₫</th>
+                                @if($inventoryEntry->status === 'pending')
+                                    @can('Duyệt / Hủy phiếu nhập kho')
+                                        <th></th>
+                                    @endcan
+                                @endif
                             </tr>
                         </tfoot>
                     </table>
@@ -93,9 +154,29 @@
             <!-- /.row -->
 
             <div class="row d-print-none mt-4">
-                <div class="col-12 text-end">
+                <div class="col-12 text-end d-flex gap-2 justify-content-end">
                     <a href="{{ route('inventory-entries.index') }}" class="btn btn-default"><i class="bi bi-arrow-left"></i> Quay lại</a>
-                    <button type="button" class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer"></i> In Phiếu</button>
+                    <button type="button" class="btn btn-warning" onclick="window.print()"><i class="bi bi-printer"></i> In Phiếu</button>
+
+                    @if($inventoryEntry->status === 'pending')
+                    @can('Duyệt / Hủy phiếu nhập kho')
+                    {{-- Duyệt toàn bộ phiếu --}}
+                    <form action="{{ route('inventory-entries.approve', $inventoryEntry) }}" method="POST" class="d-inline" onsubmit="return confirm('Duyệt toàn bộ các dòng còn lại trong phiếu này và cộng số lượng vào tồn kho?');">
+                        @csrf
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-all"></i> Duyệt toàn bộ
+                        </button>
+                    </form>
+                    {{-- Hủy toàn bộ phiếu --}}
+                    <form action="{{ route('inventory-entries.cancel', $inventoryEntry) }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('Hủy toàn bộ phiếu nhập này?')">
+                            <i class="bi bi-x-circle"></i> Hủy cả phiếu
+                        </button>
+                    </form>
+                    @endcan
+                    @endif
                 </div>
             </div>
         </div>

@@ -119,10 +119,6 @@
                                 <a href="{{ route('inventory-entries.show', $entry) }}" class="btn btn-sm btn-info text-white">Xem</a>
                                 @if(auth()->check() && auth()->user()->hasRole(['Admin tổng', 'Admin kho']))
                                     @if($entry->status === 'pending')
-                                        <form action="{{ route('inventory-entries.approve', $entry) }}" method="POST" class="d-inline" onsubmit="return confirm('Duyệt phiếu này và cộng số lượng vào tồn kho?');">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
-                                        </form>
                                         <form action="{{ route('inventory-entries.cancel', $entry) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu này?');">
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-danger">Hủy</button>

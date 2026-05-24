@@ -225,7 +225,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="modal_stock" class="form-label fw-bold">Số lượng tồn kho mới <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" min="0" class="form-control" name="stock" id="modal_stock" required placeholder="Nhập số lượng tồn kho hiện tại...">
+                        <input type="number" step="any" min="0" class="form-control" name="stock" id="modal_stock" required placeholder="Nhập số lượng tồn kho hiện tại...">
                         <small class="text-muted d-block mt-1">Vui lòng nhập số lượng thực tế hiện tại trong kho. Hệ thống sẽ tính toán chênh lệch để tạo phiếu điều chỉnh tự động.</small>
                     </div>
                     <div class="row">
