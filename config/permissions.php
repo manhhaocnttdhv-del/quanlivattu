@@ -171,6 +171,16 @@ return [
         'group' => 'Quản lý Người dùng',
         'permissions' => [
             [
+                'name'        => 'Xem danh sách người dùng',
+                'description' => 'Truy cập trang quản lý người dùng',
+                'roles'       => ['Admin tổng'],
+            ],
+            [
+                'name'        => 'Thêm / Sửa / Xóa người dùng',
+                'description' => 'Tạo, cập nhật, xóa tài khoản người dùng',
+                'roles'       => ['Admin tổng'],
+            ],
+            [
                 'name'        => 'Phân quyền người dùng',
                 'description' => 'Xem ma trận phân quyền theo role',
                 'roles'       => ['Admin tổng'],
