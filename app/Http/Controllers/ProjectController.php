@@ -64,7 +64,7 @@ class ProjectController extends Controller
 
         $request->validate([
             'materials' => 'array',
-            'materials.*' => 'numeric|min:0' // id material => quantity
+            'materials.*' => 'nullable|string' // id material => quantity
         ]);
 
         foreach ($request->input('materials', []) as $materialId => $quantity) {

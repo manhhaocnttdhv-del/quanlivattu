@@ -137,7 +137,7 @@
         </td>
         <td class="unit-cell text-center align-middle bg-light">-</td>
         <td>
-            <input type="number" class="form-control text-end qty-input" name="materials[__INDEX__][quantity]" step="any" min="0.01" value="1" required>
+            <input type="text" class="form-control text-end qty-input" name="materials[__INDEX__][quantity]" value="1" required>
         </td>
         <td>
             <input type="text" class="form-control" name="materials[__INDEX__][location]" readonly placeholder="Vị trí lấy hàng">

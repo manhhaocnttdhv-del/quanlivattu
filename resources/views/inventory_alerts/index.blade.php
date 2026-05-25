@@ -66,10 +66,10 @@
                             <td class="fw-bold">{{ $item->material->name ?? 'N/A' }}</td>
                             <td class="text-center">{{ $item->material->unit->name ?? '—' }}</td>
                             <td class="text-center">
-                                <span class="badge bg-danger fs-6">{{ number_format($item->stock, 2) }}</span>
+                                <span class="badge bg-danger fs-6">{{ (float)$item->stock }}</span>
                             </td>
                             <td class="text-center text-warning fw-bold">{{ $minStock }}</td>
-                            <td class="text-center text-danger fw-bold">{{ number_format(max(0, $minStock - $item->stock), 2) }}</td>
+                            <td class="text-center text-danger fw-bold">{{ (float)max(0, $minStock - $item->stock) }}</td>
                             <td class="text-center"><span class="badge text-bg-light text-dark">{{ $item->location ?? 'N/A' }}</span></td>
                         </tr>
                         @empty

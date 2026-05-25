@@ -65,7 +65,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td class="text-start">{{ $detail->material->name ?? 'N/A' }}</td>
                                 <td>{{ $detail->material->unit->name ?? 'N/A' }}</td>
-                                <td class="fw-bold">{{ number_format($detail->quantity, 2) }}</td>
+                                <td class="fw-bold">{{ (float)$detail->quantity }}</td>
                                 <td><span class="badge text-bg-info text-white">{{ $detail->location ?? 'N/A' }}</span></td>
                             </tr>
                             @endforeach

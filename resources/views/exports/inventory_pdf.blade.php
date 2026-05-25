@@ -63,7 +63,7 @@
                 <td class="text-center">{{ $stock->material->unit->name }}</td>
                 <td>{{ $stock->warehouse->name }}</td>
                 <td class="text-center">{{ $stock->location ?? '-' }}</td>
-                <td class="text-right">{{ number_format($stock->stock, 2) }}</td>
+                <td class="text-right">{{ (float)$stock->stock }}</td>
                 <td class="text-right">{{ number_format($stock->average_cost) }} ₫</td>
                 <td class="text-right">{{ number_format($lineTotal) }} ₫</td>
             </tr>

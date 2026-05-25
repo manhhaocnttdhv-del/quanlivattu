@@ -89,7 +89,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td class="text-start">{{ $detail->material->name ?? 'N/A' }}</td>
                                 <td>{{ $detail->material->unit->name ?? 'N/A' }}</td>
-                                <td class="fw-bold">{{ number_format($detail->quantity, 2) }}</td>
+                                <td class="fw-bold">{{ (float)$detail->quantity }}</td>
                                 <td class="text-end">{{ number_format($detail->unit_price) }} ₫</td>
                                 <td><span class="badge text-bg-warning">{{ $detail->location ?? 'N/A' }}</span></td>
                                 <td class="text-end fw-bold">{{ number_format($subtotal) }} ₫</td>

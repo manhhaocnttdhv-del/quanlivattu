@@ -75,10 +75,17 @@ class MaterialController extends Controller
 
     public function updateStock(Request $request, \App\Services\InventoryService $inventoryService)
     {
+        if ($request->has('cost_price') && $request->input('cost_price') !== '') {
+            $request->merge(['cost_price' => preg_replace('/\D/', '', $request->input('cost_price'))]);
+        }
+        if ($request->has('selling_price') && $request->input('selling_price') !== '') {
+            $request->merge(['selling_price' => preg_replace('/\D/', '', $request->input('selling_price'))]);
+        }
+
         $validated = $request->validate([
             'material_id' => 'required|exists:materials,id',
             'warehouse_id' => 'required|exists:warehouses,id',
-            'stock' => 'required|numeric|min:0',
+            'stock' => 'required|string',
             'cost_price' => 'nullable|numeric|min:0',
             'selling_price' => 'nullable|numeric|min:0',
             'location' => 'nullable|string|max:100',
@@ -150,8 +157,8 @@ class MaterialController extends Controller
             'unit_id' => 'required|exists:units,id',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
-            'min_stock' => 'nullable|numeric|min:0',
-            'max_stock' => 'nullable|numeric|min:0',
+            'min_stock' => 'nullable|string',
+            'max_stock' => 'nullable|string',
         ]);
 
         Material::create($validated);
@@ -177,8 +184,8 @@ class MaterialController extends Controller
             'unit_id' => 'required|exists:units,id',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
-            'min_stock' => 'nullable|numeric|min:0',
-            'max_stock' => 'nullable|numeric|min:0',
+            'min_stock' => 'nullable|string',
+            'max_stock' => 'nullable|string',
         ]);
 
         $material->update($validated);
@@ -187,8 +194,30 @@ class MaterialController extends Controller
 
     public function destroy(Material $material)
     {
-        $material->delete();
-        return redirect()->route('materials.index')->with('success', 'Xóa vật tư thành công!');
+        // Kiểm tra xem vật tư đã có phát sinh giao dịch/kiểm kê chưa
+        $hasEntries = \DB::table('inventory_entry_details')->where('material_id', $material->id)->exists();
+        $hasExits = \DB::table('inventory_exit_details')->where('material_id', $material->id)->exists();
+        $hasTransfers = \DB::table('inventory_transfer_details')->where('material_id', $material->id)->exists();
+        $hasChecks = \DB::table('inventory_check_details')->where('material_id', $material->id)->exists();
+
+        if ($hasEntries || $hasExits || $hasTransfers || $hasChecks) {
+            return back()->with('error', 'Không thể xóa vật tư này vì đã phát sinh lịch sử giao dịch (nhập/xuất/chuyển kho/kiểm kê) liên quan.');
+        }
+
+        try {
+            DB::beginTransaction();
+            // Xóa liên kết kho và dự toán công trình trước
+            \DB::table('material_warehouses')->where('material_id', $material->id)->delete();
+            \DB::table('project_materials')->where('material_id', $material->id)->delete();
+            
+            $material->delete();
+            
+            DB::commit();
+            return redirect()->route('materials.index')->with('success', 'Xóa vật tư thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Có lỗi xảy ra khi xóa vật tư: ' . $e->getMessage());
+        }
     }
 
     public function export()

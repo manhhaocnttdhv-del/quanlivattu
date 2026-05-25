@@ -145,10 +145,10 @@
         </td>
         <td class="unit-cell text-center align-middle bg-light">-</td>
         <td>
-            <input type="number" class="form-control text-end qty-input" name="materials[__INDEX__][quantity]" step="any" min="0.01" value="1" required>
+            <input type="text" class="form-control text-end qty-input" name="materials[__INDEX__][quantity]" value="1" required>
         </td>
         <td>
-            <input type="number" class="form-control text-end price-input" name="materials[__INDEX__][unit_price]" min="0" value="0">
+            <input type="text" class="form-control text-end price-input" name="materials[__INDEX__][unit_price]" value="0">
         </td>
         <td class="subtotal-cell text-end align-middle fw-bold bg-light">0 ₫</td>
         <td>
@@ -187,7 +187,8 @@
                 const subtotalCell = row.querySelector('.subtotal-cell');
 
                 const qty = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
-                const price = parseFloat(priceInput ? priceInput.value : 0) || 0;
+                const priceVal = priceInput ? priceInput.value : '0';
+                const price = parseFloat(priceVal.replace(/\D/g, "")) || 0;
                 const subtotal = qty * price;
                 total += subtotal;
 
@@ -203,6 +204,19 @@
         }
 
         listBody.addEventListener('input', function(e) {
+            if (e.target.classList.contains('price-input')) {
+                let cursorPosition = e.target.selectionStart;
+                let originalLength = e.target.value.length;
+                let cleanValue = e.target.value.replace(/\D/g, "");
+                if (cleanValue) {
+                    e.target.value = new Intl.NumberFormat("vi-VN").format(cleanValue);
+                } else {
+                    e.target.value = "";
+                }
+                let newLength = e.target.value.length;
+                let diff = newLength - originalLength;
+                e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+            }
             if (e.target.classList.contains('qty-input') || e.target.classList.contains('price-input')) {
                 calculateTotals();
             }
@@ -235,7 +249,7 @@
                 if (selectedOption && selectedOption.value && warehouseId) {
                     const stocks = JSON.parse(selectedOption.getAttribute('data-stocks') || '{}');
                     if (stocks[warehouseId]) {
-                        if (priceInput) priceInput.value = stocks[warehouseId].cost_price || 0;
+                        if (priceInput) priceInput.value = new Intl.NumberFormat('vi-VN').format(Math.round(stocks[warehouseId].cost_price || 0));
                         if (locationInput) locationInput.value = stocks[warehouseId].location || '';
                     } else {
                         if (priceInput) priceInput.value = 0;
@@ -320,7 +334,7 @@
                     if (selectedOption && warehouseId) {
                         const stocks = JSON.parse(selectedOption.getAttribute('data-stocks') || '{}');
                         if (stocks[warehouseId]) {
-                            if (priceInput) priceInput.value = stocks[warehouseId].cost_price || 0;
+                            if (priceInput) priceInput.value = new Intl.NumberFormat('vi-VN').format(Math.round(stocks[warehouseId].cost_price || 0));
                             if (locationInput) locationInput.value = stocks[warehouseId].location || '';
                         } else {
                             if (priceInput) priceInput.value = 0;

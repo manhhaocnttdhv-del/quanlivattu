@@ -136,7 +136,7 @@
                             @if(auth()->user()->role !== 'Admin tổng')
                             <td class="text-end fw-bold">
                                 <span class="badge {{ $stock > 0 ? 'text-bg-success' : 'text-bg-danger' }}">
-                                    {{ number_format($stock, 2) }}
+                                    {{ (float)$stock }}
                                 </span>
                                 @if($location)
                                     <br><small class="text-muted fw-normal">Vị trí: {{ $location }}</small>
@@ -225,17 +225,17 @@
                     </div>
                     <div class="mb-3">
                         <label for="modal_stock" class="form-label fw-bold">Số lượng tồn kho mới <span class="text-danger">*</span></label>
-                        <input type="number" step="any" min="0" class="form-control" name="stock" id="modal_stock" required placeholder="Nhập số lượng tồn kho hiện tại...">
+                        <input type="text" class="form-control" name="stock" id="modal_stock" required placeholder="Nhập số lượng tồn kho hiện tại...">
                         <small class="text-muted d-block mt-1">Vui lòng nhập số lượng thực tế hiện tại trong kho. Hệ thống sẽ tính toán chênh lệch để tạo phiếu điều chỉnh tự động.</small>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="modal_cost_price" class="form-label fw-bold">Giá nhập kho này (VNĐ)</label>
-                            <input type="number" class="form-control" name="cost_price" id="modal_cost_price" min="0" step="1" placeholder="Ví dụ: 15000">
+                            <input type="text" class="form-control" name="cost_price" id="modal_cost_price" placeholder="Ví dụ: 15000">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="modal_selling_price" class="form-label fw-bold">Giá bán kho này (VNĐ)</label>
-                            <input type="number" class="form-control" name="selling_price" id="modal_selling_price" min="0" step="1" placeholder="Ví dụ: 20000">
+                            <input type="text" class="form-control" name="selling_price" id="modal_selling_price" placeholder="Ví dụ: 20000">
                         </div>
                     </div>
                     <div class="mb-3">
@@ -270,10 +270,30 @@
                 document.getElementById('modal_material_id').value = materialId;
                 document.getElementById('modal_material_name').textContent = materialName;
                 document.getElementById('modal_stock').value = currentStock;
-                document.getElementById('modal_cost_price').value = currentCost || 0;
-                document.getElementById('modal_selling_price').value = currentSelling || 0;
+                document.getElementById('modal_cost_price').value = currentCost ? new Intl.NumberFormat('vi-VN').format(Math.round(currentCost)) : 0;
+                document.getElementById('modal_selling_price').value = currentSelling ? new Intl.NumberFormat('vi-VN').format(Math.round(currentSelling)) : 0;
                 document.getElementById('modal_location').value = currentLocation;
             });
+
+            const costPriceInput = document.getElementById('modal_cost_price');
+            const sellingPriceInput = document.getElementById('modal_selling_price');
+            
+            function handlePriceInput(e) {
+                let cursorPosition = e.target.selectionStart;
+                let originalLength = e.target.value.length;
+                let cleanValue = e.target.value.replace(/\D/g, "");
+                if (cleanValue) {
+                    e.target.value = new Intl.NumberFormat("vi-VN").format(cleanValue);
+                } else {
+                    e.target.value = "";
+                }
+                let newLength = e.target.value.length;
+                let diff = newLength - originalLength;
+                e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+            }
+
+            if (costPriceInput) costPriceInput.addEventListener('input', handlePriceInput);
+            if (sellingPriceInput) sellingPriceInput.addEventListener('input', handlePriceInput);
         }
     });
 </script>

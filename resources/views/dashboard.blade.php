@@ -203,8 +203,8 @@
                             <td>{{ $item->warehouse_name }}</td>
                             <td>{{ $item->material_name }}</td>
                             <td><span class="badge text-bg-secondary">{{ $item->location ?? 'N/A' }}</span></td>
-                            <td class="text-end text-danger fw-bold">{{ number_format($item->stock, 2) }}</td>
-                            <td class="text-end fw-semibold">{{ number_format($item->min_stock, 2) }}</td>
+                            <td class="text-end text-danger fw-bold">{{ (float)$item->stock }}</td>
+                            <td class="text-end fw-semibold">{{ (float)$item->min_stock }}</td>
                             <td class="text-center">
                                 @if($item->stock <= 0)
                                     <span class="badge text-bg-danger">Hết hàng</span>

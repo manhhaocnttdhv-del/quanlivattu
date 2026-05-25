@@ -83,11 +83,11 @@
                             </td>
                             <td><code>{{ $row['ref'] }}</code></td>
                             <td><span class="badge text-bg-secondary">{{ $row['warehouse'] }}</span></td>
-                            <td class="text-end fw-bold text-success">
-                                {{ $row['in'] > 0 ? '+' . number_format($row['in'], 2) : '—' }}
+                             <td class="text-end fw-bold text-success">
+                                {{ $row['in'] > 0 ? '+' . (float)$row['in'] : '—' }}
                             </td>
                             <td class="text-end fw-bold text-danger">
-                                {{ $row['out'] > 0 ? '-' . number_format($row['out'], 2) : '—' }}
+                                {{ $row['out'] > 0 ? '-' . (float)$row['out'] : '—' }}
                             </td>
                         </tr>
                         @empty
@@ -102,13 +102,13 @@
                     <tfoot class="table-light fw-bold">
                         <tr>
                             <td colspan="4" class="text-end fs-6">TỔNG CỘNG:</td>
-                            <td class="text-end text-success fs-6">+{{ number_format($totalIn, 2) }}</td>
-                            <td class="text-end text-danger fs-6">-{{ number_format($totalOut, 2) }}</td>
+                            <td class="text-end text-success fs-6">+{{ (float)$totalIn }}</td>
+                            <td class="text-end text-danger fs-6">-{{ (float)$totalOut }}</td>
                         </tr>
                         <tr class="table-info">
                             <td colspan="4" class="text-end fs-6">Biến động thuần (Nhập - Xuất):</td>
                             <td colspan="2" class="text-end fs-5 fw-bolder {{ ($totalIn - $totalOut) >= 0 ? 'text-success' : 'text-danger' }}">
-                                {{ ($totalIn - $totalOut) >= 0 ? '+' : '' }}{{ number_format($totalIn - $totalOut, 2) }}
+                                {{ ($totalIn - $totalOut) >= 0 ? '+' : '' }}{{ (float)($totalIn - $totalOut) }}
                             </td>
                         </tr>
                     </tfoot>

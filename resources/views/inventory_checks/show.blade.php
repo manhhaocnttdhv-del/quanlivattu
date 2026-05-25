@@ -47,13 +47,13 @@
                             <td>{{ $detail->material->id }}</td>
                             <td>{{ $detail->material->name }}</td>
                             <td>{{ $detail->material->unit->name ?? '' }}</td>
-                            <td class="text-center">{{ number_format($detail->system_stock, 2) }}</td>
-                            <td class="text-center text-primary fw-bold">{{ number_format($detail->actual_stock, 2) }}</td>
+                            <td class="text-center">{{ (float)$detail->system_stock }}</td>
+                            <td class="text-center text-primary fw-bold">{{ (float)$detail->actual_stock }}</td>
                             <td class="text-center fw-bold">
                                 @if($detail->variance > 0)
-                                    <span class="text-success">+{{ number_format($detail->variance, 2) }}</span>
+                                    <span class="text-success">+{{ (float)$detail->variance }}</span>
                                 @elseif($detail->variance < 0)
-                                    <span class="text-danger">{{ number_format($detail->variance, 2) }}</span>
+                                    <span class="text-danger">{{ (float)$detail->variance }}</span>
                                 @else
                                     <span class="text-secondary">0</span>
                                 @endif

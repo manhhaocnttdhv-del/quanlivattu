@@ -61,7 +61,7 @@
                             <td class="text-start fw-bold">{{ $item->material->name ?? '' }}</td>
                             <td>{{ $item->material->unit->name ?? 'N/A' }}</td>
                             <td><span class="badge text-bg-secondary">{{ $item->location ?? 'N/A' }}</span></td>
-                            <td class="text-success fs-5 fw-bolder">{{ number_format($item->stock, 2) }}</td>
+                            <td class="text-success fs-5 fw-bolder">{{ (float)$item->stock }}</td>
                             <td class="text-end">{{ number_format($item->average_cost) }} ₫</td>
                             <td class="text-end fw-bold">{{ number_format($itemTotalValue) }} ₫</td>
                         </tr>

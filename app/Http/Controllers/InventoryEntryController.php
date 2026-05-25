@@ -68,6 +68,16 @@ class InventoryEntryController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->has('materials')) {
+            $materials = $request->input('materials');
+            foreach ($materials as $key => $item) {
+                if (isset($item['unit_price']) && $item['unit_price'] !== '') {
+                    $materials[$key]['unit_price'] = preg_replace('/\D/', '', $item['unit_price']);
+                }
+            }
+            $request->merge(['materials' => $materials]);
+        }
+
         $validated = $request->validate([
             'date' => 'required|date',
             'warehouse_id' => 'required|exists:warehouses,id',
@@ -75,7 +85,7 @@ class InventoryEntryController extends Controller
             'note' => 'nullable|string',
             'materials' => 'required|array|min:1',
             'materials.*.id' => 'required|exists:materials,id',
-            'materials.*.quantity' => 'required|numeric|min:0.01',
+            'materials.*.quantity' => 'required|string',
             'materials.*.unit_price' => 'nullable|numeric|min:0',
             'materials.*.location' => 'nullable|string|max:100',
         ]);

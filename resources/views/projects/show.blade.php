@@ -68,7 +68,7 @@
                                             <td>{{ $material->name }}</td>
                                             <td>{{ $material->unit->name ?? '' }}</td>
                                             <td>
-                                                <input type="number" step="any" min="0" class="form-control" name="materials[{{ $material->id }}]" value="{{ $qty > 0 ? $qty : '' }}" placeholder="Nhập để cấu hình định mức">
+                                                <input type="text" class="form-control" name="materials[{{ $material->id }}]" value="{{ $qty > 0 ? $qty : '' }}" placeholder="Nhập để cấu hình định mức">
                                             </td>
                                         </tr>
                                     @endforeach

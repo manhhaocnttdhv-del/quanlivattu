@@ -83,7 +83,7 @@
                                     <span class="badge text-bg-secondary fs-6">{{ $item->stock }}</span>
                                 </td>
                                 <td>
-                                    <input type="number" step="any" class="form-control text-center actual-stock-input" 
+                                    <input type="text" class="form-control text-center actual-stock-input" 
                                            name="items[{{ $index }}][actual_stock]" 
                                            value="{{ old('items.'.$index.'.actual_stock') }}" 
                                            data-system="{{ $item->stock }}" required>
@@ -126,11 +126,12 @@
                 const variance = actual - system;
                 
                 const varianceCell = this.closest('tr').querySelector('.variance-cell');
+                const formattedVariance = parseFloat(variance.toFixed(4));
                 
                 if (variance > 0) {
-                    varianceCell.innerHTML = `<span class="text-success">+${variance.toFixed(2)} (Thừa)</span>`;
+                    varianceCell.innerHTML = `<span class="text-success">+${formattedVariance} (Thừa)</span>`;
                 } else if (variance < 0) {
-                    varianceCell.innerHTML = `<span class="text-danger">${variance.toFixed(2)} (Thiếu)</span>`;
+                    varianceCell.innerHTML = `<span class="text-danger">${formattedVariance} (Thiếu)</span>`;
                 } else {
                     varianceCell.innerHTML = `<span class="text-secondary">0 (Khớp)</span>`;
                 }

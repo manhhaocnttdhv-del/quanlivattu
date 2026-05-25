@@ -56,7 +56,7 @@ class InventoryTransferController extends Controller
             'note' => 'nullable|string',
             'materials' => 'required|array|min:1',
             'materials.*.id' => 'required|exists:materials,id',
-            'materials.*.quantity' => 'required|numeric|min:0.01',
+            'materials.*.quantity' => 'required|string',
             'materials.*.location' => 'nullable|string|max:100',
         ]);
 

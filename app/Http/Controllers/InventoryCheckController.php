@@ -49,8 +49,8 @@ class InventoryCheckController extends Controller
             'note' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.material_id' => 'required|exists:materials,id',
-            'items.*.system_stock' => 'required|numeric',
-            'items.*.actual_stock' => 'required|numeric|min:0',
+            'items.*.system_stock' => 'required|string',
+            'items.*.actual_stock' => 'required|string',
         ]);
 
         try {

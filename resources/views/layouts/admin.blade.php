@@ -278,6 +278,7 @@
               </li>
               @endcanany
 
+              @canany(['view-inventory-entries', 'view-inventory-exits', 'view-inventory-transfers'])
               <li class="nav-header">NGHIỆP VỤ</li>
               @can('view-inventory-entries')
               <li class="nav-item">
@@ -303,6 +304,7 @@
                 </a>
               </li>
               @endcan
+              @endcanany
 
               @can('view-inventory-checks')
               <li class="nav-header">KIỂM KÊ</li>
@@ -455,6 +457,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="button" class="btn btn-warning" id="btnMuteAlerts">Tắt thông báo</button>
             @can('Xem cảnh báo tồn kho')
             <a href="{{ route('inventory-alerts.index') }}" class="btn btn-danger">Xem chi tiết cảnh báo</a>
             @endcan
@@ -508,41 +511,111 @@
       });
     </script>
     <!--end::OverlayScrollbars Configure-->
+    <!-- Global Session Toast Notifications -->
+    @if(session('success') || session('error') || session('status'))
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          const Toast = Swal.mixin({
+              toast: true,
+              position: 'top-end',
+              showConfirmButton: false,
+              timer: 4000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                  toast.addEventListener('mouseenter', Swal.stopTimer)
+                  toast.addEventListener('mouseleave', Swal.resumeTimer)
+              }
+          });
+
+          @if(session('success'))
+          Toast.fire({
+              icon: 'success',
+              title: {!! json_encode(session('success')) !!}
+          });
+          @endif
+
+          @if(session('error'))
+          Toast.fire({
+              icon: 'error',
+              title: {!! json_encode(session('error')) !!}
+          });
+          @endif
+
+          @if(session('status'))
+          Toast.fire({
+              icon: 'info',
+              title: {!! json_encode(session('status')) !!}
+          });
+          @endif
+      });
+    </script>
+    @endif
+
     @yield('scripts')
     @stack('scripts')
     
     <!-- Low Stock Alert Script -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-          fetch('{{ route("api.low-stock-alerts") }}')
-              .then(response => response.json())
-              .then(data => {
-                  if (data.alerts && data.alerts.length > 0) {
-                      const tbody = document.getElementById('lowStockModalBody');
-                      if (tbody) {
-                          tbody.innerHTML = '';
-                          data.alerts.forEach(item => {
-                              const row = `
-                                  <tr>
-                                      <td class="text-start fw-bold">${item.material_name}</td>
-                                      <td>${item.warehouse_name}</td>
-                                      <td class="text-danger fw-bold">${parseFloat(item.stock).toLocaleString('vi-VN')} ${item.unit}</td>
-                                      <td class="text-secondary">${parseFloat(item.min_stock).toLocaleString('vi-VN')} ${item.unit}</td>
-                                  </tr>
-                              `;
-                              tbody.insertAdjacentHTML('beforeend', row);
-                          });
-                          
-                          // Show modal using Bootstrap instance
-                          const alertModalEl = document.getElementById('lowStockAlertModal');
-                          if (alertModalEl && typeof bootstrap !== 'undefined') {
-                              const modal = new bootstrap.Modal(alertModalEl);
-                              modal.show();
-                          }
+          const alertModalEl = document.getElementById('lowStockAlertModal');
+          const muteBtn = document.getElementById('btnMuteAlerts');
+
+          if (muteBtn) {
+              muteBtn.addEventListener('click', function() {
+                  localStorage.setItem('muteLowStockAlerts', 'true');
+                  if (alertModalEl && typeof bootstrap !== 'undefined') {
+                      const modal = bootstrap.Modal.getInstance(alertModalEl);
+                      if (modal) {
+                          modal.hide();
                       }
                   }
-              })
-              .catch(error => console.error('Error fetching low stock alerts:', error));
+              });
+          }
+
+          function checkLowStock() {
+              if (localStorage.getItem('muteLowStockAlerts') === 'true') {
+                  return;
+              }
+
+              fetch('{{ route("api.low-stock-alerts") }}')
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data.alerts && data.alerts.length > 0) {
+                          const tbody = document.getElementById('lowStockModalBody');
+                          if (tbody) {
+                              tbody.innerHTML = '';
+                              data.alerts.forEach(item => {
+                                  const row = `
+                                      <tr>
+                                          <td class="text-start fw-bold">${item.material_name}</td>
+                                          <td>${item.warehouse_name}</td>
+                                          <td class="text-danger fw-bold">${parseFloat(item.stock).toLocaleString('vi-VN')} ${item.unit}</td>
+                                          <td class="text-secondary">${parseFloat(item.min_stock).toLocaleString('vi-VN')} ${item.unit}</td>
+                                      </tr>
+                                  `;
+                                  tbody.insertAdjacentHTML('beforeend', row);
+                              });
+                              
+                              // Show modal using Bootstrap instance
+                              if (alertModalEl && typeof bootstrap !== 'undefined') {
+                                  let modal = bootstrap.Modal.getInstance(alertModalEl);
+                                  if (!modal) {
+                                      modal = new bootstrap.Modal(alertModalEl);
+                                  }
+                                  modal.show();
+                              }
+                          }
+                      }
+                  })
+                  .catch(error => console.error('Error fetching low stock alerts:', error));
+          }
+
+          // Initial check on load
+          checkLowStock();
+
+          // Check every 1 minute (60000 ms)
+          setInterval(checkLowStock, 60000);
       });
     </script>
     <!--end::Script-->

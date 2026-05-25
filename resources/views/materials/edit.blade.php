@@ -66,14 +66,14 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="min_stock" class="form-label">Tồn kho tối thiểu</label>
-                            <input type="number" class="form-control @error('min_stock') is-invalid @enderror" id="min_stock" name="min_stock" value="{{ old('min_stock', $material->min_stock) }}" min="0">
+                            <input type="text" class="form-control @error('min_stock') is-invalid @enderror" id="min_stock" name="min_stock" value="{{ old('min_stock', $material->min_stock) }}">
                             @error('min_stock')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="max_stock" class="form-label">Tồn kho tối đa</label>
-                            <input type="number" class="form-control @error('max_stock') is-invalid @enderror" id="max_stock" name="max_stock" value="{{ old('max_stock', $material->max_stock) }}" min="0">
+                            <input type="text" class="form-control @error('max_stock') is-invalid @enderror" id="max_stock" name="max_stock" value="{{ old('max_stock', $material->max_stock) }}">
                             @error('max_stock')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

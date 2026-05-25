@@ -9,10 +9,31 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::with('parent', 'children')
+        // Lấy tất cả nhóm gốc kèm theo các nhóm con của chúng
+        $roots = Category::with('children', 'parent', 'materials')
             ->whereNull('parent_id')
             ->latest()
-            ->paginate(15);
+            ->get();
+
+        $allCategories = collect();
+        foreach ($roots as $root) {
+            $allCategories->push($root);
+            foreach ($root->children as $child) {
+                $allCategories->push($child);
+            }
+        }
+
+        // Phân trang thủ công bộ sưu tập đã làm phẳng
+        $page = request()->input('page', 1);
+        $perPage = 15;
+        $items = $allCategories->slice(($page - 1) * $perPage, $perPage)->values();
+        $categories = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $allCategories->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return view('categories.index', compact('categories'));
     }

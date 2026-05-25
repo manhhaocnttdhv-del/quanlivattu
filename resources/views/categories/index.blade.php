@@ -36,8 +36,8 @@
                         <tr>
                             <th style="width: 10px">#</th>
                             <th>Tên nhóm</th>
+                            <th>Phân cấp</th>
                             <th>Mô tả</th>
-                            <th>Nhóm con</th>
                             <th>Số vật tư</th>
                             @if(auth()->check() && auth()->user()->hasRole(['Admin tổng', 'Admin kho']))
                             <th style="width: 150px">Thao tác</th>
@@ -47,27 +47,33 @@
                     <tbody>
                         @forelse($categories as $category)
                         <tr class="align-middle">
-                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $loop->iteration + ($categories->currentPage() - 1) * $categories->perPage() }}</td>
                             <td>
-                                <strong>{{ $category->name }}</strong>
-                            </td>
-                            <td>{{ $category->description ?? '-' }}</td>
-                            <td>
-                                @if($category->children->count() > 0)
-                                    @foreach($category->children as $child)
-                                        <span class="badge text-bg-light border">{{ $child->name }}</span>
-                                    @endforeach
+                                @if($category->parent_id)
+                                    <span class="text-muted ms-3">└—</span> {{ $category->name }}
                                 @else
-                                    <span class="text-muted">-</span>
+                                    <strong>{{ $category->name }}</strong>
                                 @endif
                             </td>
                             <td>
-                                <span class="badge text-bg-info">{{ $category->materials->count() + $category->children->sum(fn($c) => $c->materials->count()) }}</span>
+                                @if($category->parent_id)
+                                    <span class="badge text-bg-light border text-secondary">Nhóm con của: {{ $category->parent->name }}</span>
+                                @else
+                                    <span class="badge text-bg-primary">Nhóm gốc</span>
+                                @endif
+                            </td>
+                            <td>{{ $category->description ?? '-' }}</td>
+                            <td>
+                                @if($category->parent_id)
+                                    <span class="badge text-bg-info text-white">{{ $category->materials->count() }}</span>
+                                @else
+                                    <span class="badge text-bg-secondary">{{ $category->materials->count() + $category->children->sum(fn($c) => $c->materials->count()) }}</span>
+                                @endif
                             </td>
                             @if(auth()->check() && auth()->user()->hasRole(['Admin tổng', 'Admin kho']))
                             <td>
-                                <a href="{{ route('categories.edit', $category) }}" class="btn btn-sm btn-warning">Sửa</a>
-                                <form action="{{ route('categories.destroy', $category) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa nhóm này và tất cả nhóm con?');">
+                                <a href="{{ route('categories.edit', $category) }}" class="btn btn-sm btn-warning text-white">Sửa</a>
+                                <form action="{{ route('categories.destroy', $category) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ $category->parent_id ? 'Bạn có chắc chắn muốn xóa nhóm con này?' : 'Bạn có chắc chắn muốn xóa nhóm gốc này và tất cả các nhóm con?' }}');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
