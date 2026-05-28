@@ -22,6 +22,8 @@ use App\Http\Controllers\WarehouseStaffController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\ShiftLogController;
 use App\Http\Controllers\SalaryController;
+use App\Http\Controllers\DeliveryPartnerController;
+use App\Http\Controllers\InventoryCsvImportController;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -244,6 +246,21 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['can:Phân quyền người dùng'])->group(function () {
         Route::get('/permissions', [PermissionController::class, 'index'])->name('permissions.index');
         Route::post('/permissions', [PermissionController::class, 'update'])->name('permissions.update');
+    });
+
+    // Vận chuyển & Đối tác
+    Route::middleware(['can:Xem danh sách vận chuyển'])->group(function () {
+        Route::get('delivery-partners', [DeliveryPartnerController::class, 'index'])->name('delivery-partners.index');
+    });
+    Route::middleware(['can:Quản lý đối tác vận chuyển'])->group(function () {
+        Route::resource('delivery-partners', DeliveryPartnerController::class)->except(['index', 'show']);
+    });
+
+    // Import CSV phiếu nhập / xuất kho (chỉ Admin tổng + Admin kho)
+    Route::middleware(['can:Tạo phiếu nhập kho'])->group(function () {
+        Route::get('inventory-csv', [InventoryCsvImportController::class, 'form'])->name('inventory-csv.form');
+        Route::get('inventory-csv/template', [InventoryCsvImportController::class, 'template'])->name('inventory-csv.template');
+        Route::post('inventory-csv/import', [InventoryCsvImportController::class, 'import'])->name('inventory-csv.import');
     });
 });
 

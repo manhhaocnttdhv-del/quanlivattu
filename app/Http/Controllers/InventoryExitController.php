@@ -66,8 +66,9 @@ class InventoryExitController extends Controller
                 $q->where('warehouse_id', $warehouseId);
             }
         }])->get();
+        $deliveryPartners = \App\Models\DeliveryPartner::where('status', 'active')->get();
 
-        return view('inventory_exits.create', compact('warehouses', 'projects', 'materials'));
+        return view('inventory_exits.create', compact('warehouses', 'projects', 'materials', 'deliveryPartners'));
     }
 
     public function store(Request $request, \App\Services\InventoryService $inventoryService)
@@ -82,6 +83,10 @@ class InventoryExitController extends Controller
             $request->merge(['materials' => $materials]);
         }
 
+        if ($request->filled('delivery_fee')) {
+            $request->merge(['delivery_fee' => preg_replace('/\D/', '', $request->delivery_fee)]);
+        }
+
         $validated = $request->validate([
             'date' => 'required|date',
             'warehouse_id' => 'required|exists:warehouses,id',
@@ -92,6 +97,10 @@ class InventoryExitController extends Controller
             'materials.*.quantity' => 'required|string',
             'materials.*.unit_price' => 'nullable|numeric|min:0',
             'materials.*.location' => 'nullable|string|max:100',
+            'delivery_partner_id' => 'nullable|exists:delivery_partners,id',
+            'delivery_status' => 'nullable|in:pending,in_transit,delivered,failed',
+            'delivery_fee' => 'nullable|numeric|min:0',
+            'delivery_code' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -104,6 +113,10 @@ class InventoryExitController extends Controller
                 'user_id' => Auth::id(),
                 'status' => 'pending',
                 'note' => $validated['note'],
+                'delivery_partner_id' => $validated['delivery_partner_id'] ?? null,
+                'delivery_status' => $validated['delivery_status'] ?? 'pending',
+                'delivery_fee' => $validated['delivery_fee'] ?? 0,
+                'delivery_code' => $validated['delivery_code'] ?? null,
             ]);
 
             foreach ($validated['materials'] as $item) {
@@ -155,7 +168,7 @@ class InventoryExitController extends Controller
 
     public function show(InventoryExit $inventoryExit)
     {
-        $inventoryExit->load(['warehouse', 'project', 'user', 'details.material.unit']);
+        $inventoryExit->load(['warehouse', 'project', 'user', 'details.material.unit', 'deliveryPartner']);
         return view('inventory_exits.show', compact('inventoryExit'));
     }
 

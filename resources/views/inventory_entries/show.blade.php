@@ -62,7 +62,54 @@
             </div>
             <!-- /.row -->
 
-            <!-- Table row -->
+            <!-- Shipping Info Row -->
+            @if($inventoryEntry->deliveryPartner)
+            <div class="row bg-light border rounded p-3 mb-4 mx-0 shadow-sm align-items-center">
+                <div class="col-md-3">
+                    <h6 class="fw-bold text-secondary mb-1"><i class="bi bi-truck text-primary"></i> Phương tiện / Đối tác</h6>
+                    <div class="fw-bold fs-6 text-primary">{{ $inventoryEntry->deliveryPartner->name }}</div>
+                    @if($inventoryEntry->deliveryPartner->type == 'internal')
+                        <span class="badge text-bg-primary mt-1"><i class="bi bi-truck me-1"></i> Xe nội bộ</span>
+                    @else
+                        <span class="badge text-bg-info mt-1"><i class="bi bi-building me-1"></i> Đối tác ngoài</span>
+                    @endif
+                </div>
+                <div class="col-md-3">
+                    <h6 class="fw-bold text-secondary mb-1"><i class="bi bi-file-earmark-text text-info"></i> Mã vận đơn / Số chuyến</h6>
+                    <div class="fw-bold font-monospace text-dark">{{ $inventoryEntry->delivery_code ?? 'N/A' }}</div>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="fw-bold text-secondary mb-1"><i class="bi bi-cash-stack text-success"></i> Phí vận chuyển</h6>
+                    <div class="fw-bold text-danger">{{ number_format($inventoryEntry->delivery_fee) }} ₫</div>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="fw-bold text-secondary mb-1">Trạng thái giao nhận</h6>
+                    @php
+                        $delStatusMap = [
+                            'pending' => ['label' => 'Chờ giao hàng', 'color' => 'secondary'],
+                            'in_transit' => ['label' => 'Đang vận chuyển', 'color' => 'warning'],
+                            'delivered' => ['label' => 'Đã giao hàng', 'color' => 'success'],
+                            'failed' => ['label' => 'Thất bại', 'color' => 'danger']
+                        ];
+                        $ds = $delStatusMap[$inventoryEntry->delivery_status] ?? ['label' => $inventoryEntry->delivery_status, 'color' => 'dark'];
+                    @endphp
+                    <span class="badge text-bg-{{ $ds['color'] }} fs-6">{{ $ds['label'] }}</span>
+                </div>
+                @if($inventoryEntry->deliveryPartner->license_plate || $inventoryEntry->deliveryPartner->driver_name)
+                <div class="col-12 mt-2 pt-2 border-top">
+                    <small class="text-muted">
+                        @if($inventoryEntry->deliveryPartner->license_plate)
+                            <strong>Biển số xe:</strong> <span class="font-monospace text-dark">{{ $inventoryEntry->deliveryPartner->license_plate }}</span> &nbsp;|&nbsp;
+                        @endif
+                        @if($inventoryEntry->deliveryPartner->driver_name)
+                            <strong>Tài xế:</strong> <span class="text-dark">{{ $inventoryEntry->deliveryPartner->driver_name }} ({{ $inventoryEntry->deliveryPartner->driver_phone ?? 'N/A' }})</span>
+                        @endif
+                    </small>
+                </div>
+                @endif
+            </div>
+            @endif
+
             <div class="row">
                 <div class="col-12 table-responsive">
                     <table class="table table-striped table-bordered text-center align-middle">

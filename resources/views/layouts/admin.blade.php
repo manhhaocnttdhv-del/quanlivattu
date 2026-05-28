@@ -192,9 +192,11 @@
                     </li>
                 </ul>
               </li>
-              
-              <li class="nav-item {{ request()->routeIs('suppliers.*') || request()->routeIs('projects.*') ? 'menu-open' : '' }}">
-                  <a href="#" class="nav-link {{ request()->routeIs('suppliers.*') || request()->routeIs('projects.*') ? 'active' : '' }}">
+              @endcan
+
+              @canany(['Quản lý nhà cung cấp', 'Xem danh sách vận chuyển'])
+              <li class="nav-item {{ request()->routeIs('suppliers.*') || request()->routeIs('projects.*') || request()->routeIs('delivery-partners.*') ? 'menu-open' : '' }}">
+                  <a href="#" class="nav-link {{ request()->routeIs('suppliers.*') || request()->routeIs('projects.*') || request()->routeIs('delivery-partners.*') ? 'active' : '' }}">
                       <i class="nav-icon bi bi-people"></i>
                       <p>
                           Đối tác
@@ -202,6 +204,7 @@
                       </p>
                   </a>
                   <ul class="nav nav-treeview">
+                      @can('Quản lý nhà cung cấp')
                       <li class="nav-item">
                           <a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}">
                               <i class="nav-icon bi bi-circle"></i>
@@ -214,9 +217,18 @@
                               <p>Công trình (Dự án)</p>
                           </a>
                       </li>
+                      @endcan
+                      @can('Xem danh sách vận chuyển')
+                      <li class="nav-item">
+                          <a href="{{ route('delivery-partners.index') }}" class="nav-link {{ request()->routeIs('delivery-partners.*') ? 'active' : '' }}">
+                              <i class="bi bi-circle nav-icon"></i>
+                              <p>Vận chuyển & Đối tác</p>
+                          </a>
+                      </li>
+                      @endcan
                   </ul>
               </li>
-              @endcan
+              @endcanany
               
               @can('Xem danh sách người dùng')
               <li class="nav-item">

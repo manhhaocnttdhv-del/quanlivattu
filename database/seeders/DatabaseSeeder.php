@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             AdditionalMaterialSeeder::class,
             RolePermissionSeeder::class,
             MockDataSeeder::class,
+            DeliveryPartnerSeeder::class,
         ]);
     }
 }

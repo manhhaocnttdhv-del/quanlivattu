@@ -214,4 +214,20 @@ return [
         ],
     ],
 
+    [
+        'group' => 'Quản lý Vận chuyển',
+        'permissions' => [
+            [
+                'name'        => 'Xem danh sách vận chuyển',
+                'description' => 'Truy cập trang danh sách đối tác & phương tiện vận chuyển',
+                'roles'       => ['Admin tổng', 'Admin kho', 'Nhân viên kho'],
+            ],
+            [
+                'name'        => 'Quản lý đối tác vận chuyển',
+                'description' => 'Thêm, sửa, xóa đối tác hoặc phương tiện vận chuyển',
+                'roles'       => ['Admin tổng', 'Admin kho'],
+            ],
+        ],
+    ],
+
 ];

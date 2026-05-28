@@ -65,6 +65,54 @@
                         </div>
                     </div>
 
+                    <!-- Shipping Fields Group -->
+                    <div class="row bg-light p-3 rounded mb-3 border border-secondary-subtle">
+                        <h6 class="fw-bold text-secondary mb-2"><i class="bi bi-truck"></i> Thông tin Vận chuyển / Giao nhận</h6>
+                        <div class="col-md-3 mb-2">
+                            <label for="delivery_partner_id" class="form-label">Phương tiện / Đối tác</label>
+                            <select class="form-select @error('delivery_partner_id') is-invalid @enderror" id="delivery_partner_id" name="delivery_partner_id">
+                                <option value="">-- Không sử dụng --</option>
+                                @foreach($deliveryPartners as $partner)
+                                <option value="{{ $partner->id }}" {{ old('delivery_partner_id') == $partner->id ? 'selected' : '' }}>
+                                    {{ $partner->name }} {{ $partner->license_plate ? '[' . $partner->license_plate . ']' : '' }}
+                                </option>
+                                @endforeach
+                            </select>
+                            @error('delivery_partner_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-3 mb-2">
+                            <label for="delivery_code" class="form-label">Mã vận đơn / Số chuyến</label>
+                            <input type="text" class="form-control @error('delivery_code') is-invalid @enderror" id="delivery_code" name="delivery_code" value="{{ old('delivery_code') }}" placeholder="Mã vận đơn">
+                            @error('delivery_code')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-3 mb-2">
+                            <label for="delivery_fee" class="form-label">Phí vận chuyển (₫)</label>
+                            <input type="text" class="form-control text-end @error('delivery_fee') is-invalid @enderror" id="delivery_fee" name="delivery_fee" value="{{ old('delivery_fee', 0) }}">
+                            @error('delivery_fee')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-3 mb-2">
+                            <label for="delivery_status" class="form-label">Trạng thái vận chuyển</label>
+                            <select class="form-select @error('delivery_status') is-invalid @enderror" id="delivery_status" name="delivery_status">
+                                <option value="pending" {{ old('delivery_status', 'pending') == 'pending' ? 'selected' : '' }}>Chờ giao hàng</option>
+                                <option value="in_transit" {{ old('delivery_status') == 'in_transit' ? 'selected' : '' }}>Đang vận chuyển</option>
+                                <option value="delivered" {{ old('delivery_status') == 'delivered' ? 'selected' : '' }}>Đã giao hàng</option>
+                                <option value="failed" {{ old('delivery_status') == 'failed' ? 'selected' : '' }}>Thất bại</option>
+                            </select>
+                            @error('delivery_status')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label for="note" class="form-label">Ghi chú</label>
                         <textarea class="form-control @error('note') is-invalid @enderror" id="note" name="note" rows="2">{{ old('note') }}</textarea>
@@ -354,6 +402,19 @@
             });
         });
         
+        // Format delivery fee
+        const deliveryFeeInput = document.getElementById('delivery_fee');
+        if (deliveryFeeInput) {
+            deliveryFeeInput.addEventListener('input', function(e) {
+                let cleanValue = e.target.value.replace(/\D/g, "");
+                if (cleanValue) {
+                    e.target.value = new Intl.NumberFormat("vi-VN").format(cleanValue);
+                } else {
+                    e.target.value = "";
+                }
+            });
+        }
+
         // Run once on load
         if (warehouseSelect.value) {
             filterSuppliers();

@@ -43,12 +43,17 @@ class InventoryTransferController extends Controller
                 $q->where('warehouse_id', $fromWarehouseId);
             }
         }])->get();
+        $deliveryPartners = \App\Models\DeliveryPartner::where('status', 'active')->get();
 
-        return view('inventory_transfers.create', compact('fromWarehouses', 'toWarehouses', 'materials'));
+        return view('inventory_transfers.create', compact('fromWarehouses', 'toWarehouses', 'materials', 'deliveryPartners'));
     }
 
     public function store(Request $request, \App\Services\InventoryService $inventoryService)
     {
+        if ($request->filled('delivery_fee')) {
+            $request->merge(['delivery_fee' => preg_replace('/\D/', '', $request->delivery_fee)]);
+        }
+
         $validated = $request->validate([
             'date' => 'required|date',
             'from_warehouse_id' => 'required|exists:warehouses,id',
@@ -58,6 +63,10 @@ class InventoryTransferController extends Controller
             'materials.*.id' => 'required|exists:materials,id',
             'materials.*.quantity' => 'required|string',
             'materials.*.location' => 'nullable|string|max:100',
+            'delivery_partner_id' => 'nullable|exists:delivery_partners,id',
+            'delivery_status' => 'nullable|in:pending,in_transit,delivered,failed',
+            'delivery_fee' => 'nullable|numeric|min:0',
+            'delivery_code' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -70,6 +79,10 @@ class InventoryTransferController extends Controller
                 'user_id' => Auth::id(),
                 'status' => 'pending',
                 'note' => $validated['note'],
+                'delivery_partner_id' => $validated['delivery_partner_id'] ?? null,
+                'delivery_status' => $validated['delivery_status'] ?? 'pending',
+                'delivery_fee' => $validated['delivery_fee'] ?? 0,
+                'delivery_code' => $validated['delivery_code'] ?? null,
             ]);
 
             foreach ($validated['materials'] as $item) {
@@ -96,7 +109,7 @@ class InventoryTransferController extends Controller
 
     public function show(InventoryTransfer $inventoryTransfer)
     {
-        $inventoryTransfer->load(['fromWarehouse', 'toWarehouse', 'user', 'details.material.unit']);
+        $inventoryTransfer->load(['fromWarehouse', 'toWarehouse', 'user', 'details.material.unit', 'deliveryPartner']);
         return view('inventory_transfers.show', compact('inventoryTransfer'));
     }
 
